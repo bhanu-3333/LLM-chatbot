@@ -1,14 +1,5 @@
-import { useEffect } from "react";
-import API from "./api/api";
+import AppRoutes from "./routes/AppRoutes";
 
-function App() {
-  useEffect(() => {
-    API.get("/health")
-      .then((res) => console.log(res.data))
-      .catch((err) => console.error(err));
-  }, []);
-
-  return <h1>Medical RAG Frontend Running 🚀</h1>;
+export default function App() {
+  return <AppRoutes />;
 }
-
-export default App;
