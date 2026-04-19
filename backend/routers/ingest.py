@@ -15,9 +15,11 @@ router = APIRouter(tags=["Ingestion"])
 
 
 def _generate_patient_id(doctor_id: str, db: Session) -> str:
-    """Auto-generate next patient ID scoped to this doctor: P001, P002 ..."""
+    """Auto-generate unique patient ID scoped to this doctor: {doctor_prefix}-P001"""
     count = db.query(Patient).filter(Patient.doctor_id == doctor_id).count()
-    return f"P{str(count + 1).zfill(3)}"
+    # Use first 6 chars of doctor_id to namespace the patient ID
+    prefix = doctor_id[:6].upper()
+    return f"{prefix}-P{str(count + 1).zfill(3)}"
 
 
 @router.post(

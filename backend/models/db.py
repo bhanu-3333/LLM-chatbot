@@ -40,7 +40,7 @@ class Patient(Base):
     __tablename__ = "patients"
 
     id         = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    patient_id = Column(String, unique=True, nullable=False)   # e.g. P001
+    patient_id = Column(String, nullable=False)        # e.g. 3597084A-P001
     name       = Column(String, nullable=False)
     age        = Column(String, nullable=False)
     gender     = Column(String, nullable=False)
