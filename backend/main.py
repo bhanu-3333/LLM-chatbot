@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from models.db import init_db
-from routers import ingest, chat, auth
+from routers import ingest, chat, auth, patients
 
 app = FastAPI(
     title="Medical RAG API",
@@ -11,6 +11,7 @@ app = FastAPI(
 app.include_router(auth.router)
 app.include_router(ingest.router)
 app.include_router(chat.router)
+app.include_router(patients.router)
 
 @app.on_event("startup")
 def on_startup():
