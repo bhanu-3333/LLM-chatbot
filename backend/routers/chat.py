@@ -1,9 +1,12 @@
 import os
 import re
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
 from config import BASE_PATH, TOP_K_CHUNKS
+from models.db import get_db, Patient, Doctor
+from services.auth import get_current_doctor
 from services.embedder import get_embeddings
 from services.faiss_manager import load_db
 from services.ollama_client import generate_answer, NOT_FOUND_RESPONSE
@@ -19,7 +22,6 @@ def _error(message: str, status_code: int = 400):
     return JSONResponse(status_code=status_code, content={"status": "error", "message": message})
 
 def _extract_page(query: str):
-    """Return 0-based page number if query mentions a specific page, else None."""
     q = query.lower()
     m = re.search(r'page\s*(\d+)', q)
     if m:
@@ -32,41 +34,55 @@ def _extract_page(query: str):
 def _build_citations(docs):
     seen = {}
     for doc in docs:
-        name = os.path.basename(doc.metadata.get("source", "unknown"))
-        page = doc.metadata.get("page", 0)
+        name  = os.path.basename(doc.metadata.get("source", "unknown"))
+        page  = doc.metadata.get("page", 0)
         label = f"Source: {name} (Page {page + 1})"
         seen[label] = page
     return [label for label, _ in sorted(seen.items(), key=lambda x: x[1])][:TOP_K_CHUNKS]
 
+
 @router.post("/chat", summary="Query a patient's indexed documents")
-def chat(patient_id: str, query: str):
+def chat(
+    patient_id: str,
+    query:      str,
+    db:         Session = Depends(get_db),
+    doctor:     Doctor  = Depends(get_current_doctor),
+):
     try:
         if not query or not query.strip():
             return _error("Please enter a valid question")
 
-        print(f"[chat] patient='{patient_id}' query='{query}'")
+        # Verify this patient belongs to the requesting doctor
+        patient = db.query(Patient).filter(
+            Patient.patient_id == patient_id,
+            Patient.doctor_id  == doctor.id
+        ).first()
 
-        faiss_path = os.path.join(BASE_PATH, patient_id, "faiss")
+        if not patient:
+            return _error("Patient not found or access denied", 404)
+
+        print(f"[chat] doctor='{doctor.name}' patient='{patient_id}' query='{query}'")
+
+        faiss_path = os.path.join(BASE_PATH, doctor.id, patient_id, "faiss")
         if not os.path.exists(os.path.join(faiss_path, "index.faiss")):
-            return _error("Patient data not available", 404)
+            return _error("Patient data not available — please upload documents first", 404)
 
-        db = load_db(faiss_path, get_embeddings())
-
+        db_index = load_db(faiss_path, get_embeddings())
         requested_page = _extract_page(query)
 
         if requested_page is not None:
             print(f"[chat] Page filter → page {requested_page + 1}")
-            all_docs = list(db.docstore._dict.values())
+            all_docs = list(db_index.docstore._dict.values())
             docs = [d for d in all_docs if d.metadata.get("page") == requested_page][:TOP_K_CHUNKS]
             if not docs:
                 return {
-                    "status": "NOT_FOUND",
+                    "status":     "NOT_FOUND",
                     "patient_id": patient_id,
-                    "answer": "No data found for that page",
-                    "citations": []
+                    "answer":     "No data found for that page",
+                    "citations":  []
                 }
         else:
-            docs = db.similarity_search(query, k=TOP_K_CHUNKS)
+            docs = db_index.similarity_search(query, k=TOP_K_CHUNKS)
 
         print(f"[chat] Retrieved {len(docs)} chunks")
 
@@ -78,10 +94,11 @@ def chat(patient_id: str, query: str):
         status  = "NOT_FOUND" if answer == NOT_FOUND_RESPONSE else "SUCCESS"
 
         return {
-            "status": status,
-            "patient_id": patient_id,
-            "answer": answer,
-            "citations": _build_citations(docs) if status == "SUCCESS" else []
+            "status":       status,
+            "patient_id":   patient_id,
+            "patient_name": patient.name,
+            "answer":       answer,
+            "citations":    _build_citations(docs) if status == "SUCCESS" else []
         }
 
     except Exception as e:
