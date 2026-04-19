@@ -1,19 +1,168 @@
-body {
-  background: black;
-  color: white;
-  font-family: Arial;
-  margin: 0;
+/* Layout */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px;
 }
 
-input, button {
-  margin: 5px;
-  padding: 10px;
-  background: black;
-  color: white;
-  border: 1px solid white;
+/* Navbar */
+.navbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 24px;
+  background: #1a1d27;
+  border-bottom: 1px solid #2d3148;
+  margin-bottom: 32px;
 }
 
-button:hover {
-  background: white;
-  color: black;
+.navbar span {
+  font-weight: 600;
+  font-size: 18px;
+  color: #a78bfa;
+  margin-right: auto;
 }
+
+/* Buttons */
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+button:hover { opacity: 0.85; }
+
+.btn-primary   { background: #7c3aed; color: #fff; }
+.btn-secondary { background: #2d3148; color: #e2e8f0; }
+.btn-danger    { background: #dc2626; color: #fff; }
+
+/* Inputs */
+input, select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #2d3148;
+  background: #1a1d27;
+  color: #e2e8f0;
+  font-size: 14px;
+  margin-bottom: 12px;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: #7c3aed;
+}
+
+/* Cards */
+.card {
+  background: #1a1d27;
+  border: 1px solid #2d3148;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.card:hover { border-color: #7c3aed; }
+
+/* Auth pages */
+.auth-container {
+  max-width: 420px;
+  margin: 80px auto;
+  padding: 40px;
+  background: #1a1d27;
+  border-radius: 16px;
+  border: 1px solid #2d3148;
+}
+
+.auth-container h1 {
+  font-size: 26px;
+  margin-bottom: 24px;
+  color: #a78bfa;
+  text-align: center;
+}
+
+.auth-links {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.auth-links a {
+  color: #a78bfa;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Error / success messages */
+.msg-error   { color: #f87171; font-size: 13px; margin-top: 8px; }
+.msg-success { color: #4ade80; font-size: 13px; margin-top: 8px; }
+
+/* Chat */
+.chat-window {
+  background: #1a1d27;
+  border: 1px solid #2d3148;
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.chat-bubble-q {
+  text-align: right;
+  margin-bottom: 12px;
+}
+
+.chat-bubble-q span {
+  background: #7c3aed;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 12px 12px 2px 12px;
+  display: inline-block;
+  max-width: 75%;
+}
+
+.chat-bubble-a {
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.chat-bubble-a span {
+  background: #2d3148;
+  color: #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 12px 12px 12px 2px;
+  display: inline-block;
+  max-width: 75%;
+}
+
+.chat-citations {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 16px;
+  padding-left: 4px;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-row input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Page titles */
+h1 { font-size: 28px; margin-bottom: 24px; color: #e2e8f0; }
+h2 { font-size: 20px; margin-bottom: 16px; color: #cbd5e1; }
