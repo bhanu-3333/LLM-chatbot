@@ -10,7 +10,7 @@ from models.db import get_db, Patient, Doctor
 from services.auth import get_current_doctor
 from services.embedder import get_embeddings
 from services.faiss_manager import load_db
-from services.ollama_client import stream_answer, NOT_FOUND_RESPONSE
+from services.ollama_client import stream_answer, generate_answer, NOT_FOUND_RESPONSE
 
 router = APIRouter(tags=["Chat"])
 # Cache for loaded FAISS indices to speed up multiple queries
