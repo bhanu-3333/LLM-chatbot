@@ -1,7 +1,8 @@
 import os
 import re
+import json
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from config import BASE_PATH, TOP_K_CHUNKS
@@ -9,7 +10,7 @@ from models.db import get_db, Patient, Doctor
 from services.auth import get_current_doctor
 from services.embedder import get_embeddings
 from services.faiss_manager import load_db
-from services.ollama_client import generate_answer, NOT_FOUND_RESPONSE
+from services.ollama_client import stream_answer, NOT_FOUND_RESPONSE
 
 router = APIRouter(tags=["Chat"])
 # Cache for loaded FAISS indices to speed up multiple queries
@@ -134,3 +135,63 @@ def chat(
     except Exception as e:
         print(f"[chat] Unexpected error: {e}")
         return _error(f"Unexpected error: {str(e)}", 500)
+
+@router.get("/chat/stream", summary="Stream a patient's indexed documents response")
+def chat_stream(
+    patient_id: str,
+    query:      str,
+    db:         Session = Depends(get_db),
+    doctor:     Doctor  = Depends(get_current_doctor),
+):
+    try:
+        if not query or not query.strip():
+            return _error("Please enter a valid question")
+
+        patient = db.query(Patient).filter(
+            Patient.patient_id == patient_id,
+            Patient.doctor_id  == doctor.id
+        ).first()
+
+        if not patient:
+            return _error("Patient not found or access denied", 404)
+
+        faiss_path = os.path.join(BASE_PATH, doctor.id, patient_id, "faiss")
+        if not os.path.exists(os.path.join(faiss_path, "index.faiss")):
+            return _error("Patient data not available", 404)
+
+        if faiss_path not in _INDEX_CACHE:
+            _INDEX_CACHE[faiss_path] = load_db(faiss_path, get_embeddings())
+        
+        db_index = _INDEX_CACHE[faiss_path]
+        requested_page = _extract_page(query)
+
+        def stream_generator():
+            try:
+                # 1. Retrieval (inside generator so stream starts immediately)
+                if requested_page is not None:
+                    all_docs = list(db_index.docstore._dict.values())
+                    docs = [d for d in all_docs if d.metadata.get("page") == requested_page][:TOP_K_CHUNKS]
+                else:
+                    docs = db_index.similarity_search(query, k=TOP_K_CHUNKS)
+
+                if not docs:
+                    yield json.dumps({"answer": "No relevant data found", "citations": []}) + "\n"
+                    return
+
+                context = "\n".join([d.page_content for d in docs])
+                citations = _build_citations(docs)
+
+                # 2. Send citations first
+                yield json.dumps({"citations": citations}) + "\n"
+
+                # 3. Stream the answer (already JSON from stream_answer)
+                for line in stream_answer(context, query):
+                    yield line
+            except Exception as e:
+                yield json.dumps({"error": str(e)}) + "\n"
+
+        return StreamingResponse(stream_generator(), media_type="text/event-stream")
+
+    except Exception as e:
+        print(f"[chat_stream] Error: {e}")
+        return _error(str(e), 500)
