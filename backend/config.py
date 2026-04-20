@@ -8,7 +8,7 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # LLM model (Ollama) — use a small model to fit in available RAM
 # Options: "tinyllama" (~1GB), "phi" (~1.6GB), "mistral" (~4.5GB needs 5GB+ free RAM)
-LLM_MODEL = "tinyllama"
+LLM_MODEL = "mistral"
 
 # Retrieval
 TOP_K_CHUNKS = 3
