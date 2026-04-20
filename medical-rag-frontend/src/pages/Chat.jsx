@@ -21,24 +21,112 @@ export default function Chat() {
     setQuery("");
     setLoading(true);
 
-    setMessages(prev => [...prev, { q, a: null, citations: [] }]);
+    setMessages(prev => [...prev, { q, a: "", citations: [] }]);
 
     try {
-      const res = await API.post(`/chat?patient_id=${patient_id}&query=${encodeURIComponent(q)}`);
-      setMessages(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { q, a: res.data.answer, citations: res.data.citations || [] };
-        return updated;
-      });
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://127.0.0.1:8000/chat/stream?patient_id=${patient_id}&query=${encodeURIComponent(q)}`,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to connect to server");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedAnswer = "";
+      let buffer = ""; // Buffer for robust line-by-line parsing
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop(); // Keep the partial line in the buffer
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const data = JSON.parse(line);
+            
+            setMessages(prev => {
+              const updated = [...prev];
+              const last = { ...updated[updated.length - 1] };
+              
+              if (data.citations) last.citations = data.citations;
+              if (data.chunk) {
+                accumulatedAnswer += data.chunk;
+                last.a = accumulatedAnswer;
+              }
+              if (data.answer) last.a = data.answer;
+              
+              updated[updated.length - 1] = last;
+              return updated;
+            });
+          } catch (err) {
+            console.warn("Stream parse error (ignoring):", err);
+          }
+        }
+      }
     } catch (e) {
       setMessages(prev => {
         const updated = [...prev];
-        updated[updated.length - 1] = { q, a: "Error: " + (e.response?.data?.detail || "Request failed"), citations: [] };
+        updated[updated.length - 1] = { q, a: "Error: " + (e.message || "Request failed"), citations: [] };
         return updated;
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
+  const toggleListening = () => {
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = "en-US";
+    recognition.continuous = true; // Listen for a long time
+    recognition.interimResults = true; // Show text as you speak
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          // You can handle interim results here if you want to show ghost text
+          setQuery(event.results[i][0].transcript);
+        }
+      }
+      if (finalTranscript) setQuery(finalTranscript);
+    };
+    recognition.onerror = (event) => {
+      if (event.error !== "aborted") {
+        console.error("Speech recognition error:", event.error);
+      }
+      setIsListening(false);
+    };
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
   };
 
   return (
@@ -57,7 +145,7 @@ export default function Chat() {
             <div key={i}>
               <div className="chat-bubble-q"><span>{m.q}</span></div>
               <div className="chat-bubble-a">
-                <span>{m.a === null ? "..." : m.a}</span>
+                <span>{(m.a === "" && loading && i === messages.length - 1) ? "..." : (m.a || "...")}</span>
               </div>
               {m.citations?.length > 0 && (
                 <div className="chat-citations">{m.citations.join("  ·  ")}</div>
@@ -68,9 +156,16 @@ export default function Chat() {
         </div>
 
         <div className="chat-input-row">
+          <button 
+            className={`btn-voice ${isListening ? "active" : ""}`} 
+            onClick={toggleListening}
+            title="Use Voice Assistant"
+          >
+            {isListening ? "🛑" : "🎤"}
+          </button>
           <input
             value={query}
-            placeholder="Ask about this patient..."
+            placeholder={isListening ? "Listening..." : "Ask about this patient..."}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !loading && send()}
           />

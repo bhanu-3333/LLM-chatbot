@@ -1,14 +1,19 @@
 # Python
-venv/
-__pycache__/
-*.pyc
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
 
-# Environment variables
+# Database — never commit this, it's local data
+backend/medical_rag.db
+
+# FAISS indexes and uploaded patient files — local data only
+backend/storage/
+
+# Frontend
+medical-rag-frontend/node_modules/
+medical-rag-frontend/dist/
+
+# Environment
 .env
-
-# Node (if frontend later)
-node_modules/
-
-# OS files
-.DS_Store
-Thumbs.db
+*.env
