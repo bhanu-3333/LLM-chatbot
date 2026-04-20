@@ -34,14 +34,30 @@ def _extract_page(query: str):
             return num - 1
     return None
 
+def _build_citation_label(doc) -> str:
+    """Build a human-readable citation label based on file type metadata."""
+    name     = os.path.basename(doc.metadata.get("source", "unknown"))
+    doc_type = doc.metadata.get("type", "pdf")  # pdf | image | excel | text
+
+    if doc_type == "excel":
+        sheet = doc.metadata.get("sheet", "Sheet1")
+        return f"Source: {name} (Sheet: {sheet})"
+    elif doc_type == "image":
+        return f"Source: {name} (Image OCR)"
+    elif doc_type == "text":
+        return f"Source: {name} (Text File)"
+    else:  # pdf or unknown
+        page = doc.metadata.get("page", 0)
+        return f"Source: {name} (Page {page + 1})"
+
+
 def _build_citations(docs):
     seen = {}
     for doc in docs:
-        name  = os.path.basename(doc.metadata.get("source", "unknown"))
-        page  = doc.metadata.get("page", 0)
-        label = f"Source: {name} (Page {page + 1})"
-        seen[label] = page
-    return [label for label, _ in sorted(seen.items(), key=lambda x: x[1])][:TOP_K_CHUNKS]
+        label    = _build_citation_label(doc)
+        sort_key = doc.metadata.get("page", doc.metadata.get("sheet", 0))
+        seen[label] = sort_key
+    return list(dict.fromkeys(seen.keys()))[:TOP_K_CHUNKS]
 
 
 @router.post("/chat", summary="Query a patient's indexed documents")
@@ -73,7 +89,12 @@ def chat(
         # Load index from cache or disk
         if faiss_path not in _INDEX_CACHE:
             print(f"[chat] Loading index from disk: {faiss_path}")
-            _INDEX_CACHE[faiss_path] = load_db(faiss_path, get_embeddings())
+            try:
+                _INDEX_CACHE[faiss_path] = load_db(faiss_path, get_embeddings())
+            except Exception as load_err:
+                # Don't cache failed loads — allow retry on next request
+                _INDEX_CACHE.pop(faiss_path, None)
+                raise load_err
         
         db_index = _INDEX_CACHE[faiss_path]
 
