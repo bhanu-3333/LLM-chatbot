@@ -1,7 +1,12 @@
 from langchain_ollama import OllamaLLM
 from config import LLM_MODEL
 
-llm = OllamaLLM(model=LLM_MODEL)
+llm = OllamaLLM(
+    model=LLM_MODEL,
+    temperature=0.1,
+    num_ctx=2048,  # Reduce context window for faster processing
+    num_thread=8   # Use more threads for CPU inference
+)
 
 NOT_FOUND_RESPONSE = "I cannot answer from the provided documents."
 

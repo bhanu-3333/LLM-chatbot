@@ -12,6 +12,9 @@ from services.faiss_manager import load_db
 from services.ollama_client import generate_answer, NOT_FOUND_RESPONSE
 
 router = APIRouter(tags=["Chat"])
+# Cache for loaded FAISS indices to speed up multiple queries
+_INDEX_CACHE = {}
+
 
 WORD_TO_NUM = {
     "first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5,
@@ -67,7 +70,13 @@ def chat(
         if not os.path.exists(os.path.join(faiss_path, "index.faiss")):
             return _error("Patient data not available — please upload documents first", 404)
 
-        db_index = load_db(faiss_path, get_embeddings())
+        # Load index from cache or disk
+        if faiss_path not in _INDEX_CACHE:
+            print(f"[chat] Loading index from disk: {faiss_path}")
+            _INDEX_CACHE[faiss_path] = load_db(faiss_path, get_embeddings())
+        
+        db_index = _INDEX_CACHE[faiss_path]
+
         requested_page = _extract_page(query)
 
         if requested_page is not None:
