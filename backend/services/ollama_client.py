@@ -57,6 +57,12 @@ Answer:"""
 
         # Dedup on the complete text — catches every-other-word repetition pattern
         clean_response = _dedup_words(full_response.strip())
+
+        # Fix missing spaces from poor OCR (e.g. "Timeof" → "Time of", "11.1seconds" → "11.1 seconds")
+        clean_response = re.sub(r'([a-z])([A-Z])', r'\1 \2', clean_response)
+        clean_response = re.sub(r'(\d)([A-Za-z])', r'\1 \2', clean_response)
+        clean_response = re.sub(r'([A-Za-z])(\d)', r'\1 \2', clean_response)
+
         print(f"[ollama] Clean response: {repr(clean_response[:200])}")
 
         # Stream word by word so frontend still gets streaming effect
