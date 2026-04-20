@@ -13,49 +13,55 @@ _NOT_FOUND_SIGNALS = [
 ]
 
 def _dedup_words(text: str) -> str:
-    """Remove consecutive duplicate words produced by model repetition."""
-    tokens = text.split(" ")
+    """Remove consecutive duplicate words across the full response."""
+    tokens = text.split()
     result = []
-    for i, token in enumerate(tokens):
-        if i == 0 or token.lower() != tokens[i - 1].lower():
+    for token in tokens:
+        clean = token.strip(".,;:!?()")
+        if not result or clean.lower() != result[-1].strip(".,;:!?()").lower():
             result.append(token)
     return " ".join(result)
 
 def stream_answer(context: str, question: str):
-    # Strict prompt to prevent hallucination
     prompt = f"""You are a medical assistant. Answer using ONLY the context below.
-Rules:
-- Write each word ONCE only. Never repeat words.
-- Be concise and direct.
-- If answer not in context, say exactly: I cannot answer from the provided documents.
+Be concise and direct. Do not repeat yourself.
+If answer not in context, say exactly: I cannot answer from the provided documents.
 
 Context:
 {context}
 
 Question: {question}
 Answer:"""
-    
+
     payload = {
         "model": LLM_MODEL,
         "prompt": prompt,
         "stream": True,
-        "options": {"temperature": 0, "num_ctx": 1024, "repeat_penalty": 1.5, "repeat_last_n": 64}
+        "options": {"temperature": 0, "num_ctx": 1024, "repeat_penalty": 1.8, "repeat_last_n": 128}
     }
 
     try:
-        # Stream=True with requests
         response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=None)
         response.raise_for_status()
-        
+
+        # Collect full response first, then dedup, then stream word by word
+        full_response = ""
         for line in response.iter_lines():
             if line:
                 data = json.loads(line)
-                chunk = data.get("response", "")
-                if chunk:
-                    chunk = _dedup_words(chunk)
-                    yield json.dumps({"chunk": chunk}) + "\n"
+                full_response += data.get("response", "")
                 if data.get("done"):
                     break
+
+        # Dedup on the complete text
+        clean_response = _dedup_words(full_response.strip())
+
+        # Stream word by word so frontend still gets streaming effect
+        words = clean_response.split(" ")
+        for i, word in enumerate(words):
+            chunk = word + (" " if i < len(words) - 1 else "")
+            yield json.dumps({"chunk": chunk}) + "\n"
+
     except Exception as e:
         yield json.dumps({"chunk": f"\nError: {str(e)}"}) + "\n"
 
