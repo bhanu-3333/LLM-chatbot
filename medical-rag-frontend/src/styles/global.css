@@ -167,6 +167,9 @@ input:focus, select:focus {
   border-radius: 12px 12px 12px 2px;
   display: inline-block;
   max-width: 75%;
+  word-break: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .chat-citations {
