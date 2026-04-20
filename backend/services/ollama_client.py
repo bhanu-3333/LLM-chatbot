@@ -16,10 +16,11 @@ _NOT_FOUND_SIGNALS = [
 ]
 
 def generate_answer(context: str, question: str) -> str:
-    prompt = f"""You are a strict medical document assistant.
+    prompt = f"""You are a strict medical document assistant. You analyze patient records from various document types including PDFs, scanned images, Excel spreadsheets, and text files.
 
 RULES:
 - Answer ONLY using information from the context below.
+- The context may come from PDFs, images (via OCR), Excel tables, or text files.
 - Do NOT explain, summarize, or reason outside the context.
 - Do NOT add any text before or after your answer.
 - If the answer is not present in the context, respond with EXACTLY this phrase and nothing else:
