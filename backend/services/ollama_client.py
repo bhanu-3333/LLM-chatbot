@@ -53,8 +53,11 @@ Answer:"""
                 if data.get("done"):
                     break
 
-        # Dedup on the complete text
+        print(f"[ollama] Raw response: {repr(full_response[:200])}")
+
+        # Dedup on the complete text — catches every-other-word repetition pattern
         clean_response = _dedup_words(full_response.strip())
+        print(f"[ollama] Clean response: {repr(clean_response[:200])}")
 
         # Stream word by word so frontend still gets streaming effect
         words = clean_response.split(" ")
