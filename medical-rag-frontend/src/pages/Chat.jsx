@@ -38,8 +38,7 @@ export default function Chat() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let accumulatedAnswer = "";
-      let buffer = ""; // Buffer for robust line-by-line parsing
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -47,29 +46,36 @@ export default function Chat() {
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
-        buffer = lines.pop(); // Keep the partial line in the buffer
+        buffer = lines.pop();
 
         for (const line of lines) {
           if (!line.trim()) continue;
           try {
             const data = JSON.parse(line);
-            
-            setMessages(prev => {
-              const updated = [...prev];
-              const last = { ...updated[updated.length - 1] };
-              
-              if (data.citations) last.citations = data.citations;
-              if (data.chunk) {
-                accumulatedAnswer += data.chunk;
-                last.a = accumulatedAnswer;
-              }
-              if (data.answer) last.a = data.answer;
-              
-              updated[updated.length - 1] = last;
-              return updated;
-            });
+            if (data.citations) {
+              setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { ...updated[updated.length - 1], citations: data.citations };
+                return updated;
+              });
+            }
+            if (data.chunk) {
+              setMessages(prev => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                updated[updated.length - 1] = { ...last, a: (last.a || "") + data.chunk };
+                return updated;
+              });
+            }
+            if (data.answer) {
+              setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { ...updated[updated.length - 1], a: data.answer };
+                return updated;
+              });
+            }
           } catch (err) {
-            console.warn("Stream parse error (ignoring):", err);
+            console.warn("Stream parse error:", err);
           }
         }
       }
