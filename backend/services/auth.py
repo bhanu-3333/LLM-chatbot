@@ -25,6 +25,14 @@ def create_token(data: dict) -> str:
     payload["exp"] = datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS)
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
+def verify_token(token: str) -> str:
+    """Decodes token and returns the 'sub' (doctor_id) if valid, else None."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("sub")
+    except JWTError:
+        return None
+
 def get_current_doctor(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Doctor:
     credentials_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
