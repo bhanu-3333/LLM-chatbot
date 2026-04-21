@@ -61,7 +61,7 @@ def _build_citations(docs):
     return list(dict.fromkeys(seen.keys()))[:TOP_K_CHUNKS]
 
 
-@router.post("/chat", summary="Query a patient's indexed documents")
+@router.post("/", summary="Query a patient's indexed documents")
 def chat(
     patient_id: str,
     query:      str,
@@ -124,12 +124,33 @@ def chat(
         answer  = generate_answer(context, query)
         status  = "NOT_FOUND" if answer == NOT_FOUND_RESPONSE else "SUCCESS"
 
+        # Save messages to database
+        from models.db import ChatMessage
+        citations_list = _build_citations(docs) if status == "SUCCESS" else []
+        
+        user_msg = ChatMessage(
+            patient_id=patient_id,
+            doctor_id=doctor.id,
+            role="user",
+            text=query
+        )
+        asst_msg = ChatMessage(
+            patient_id=patient_id,
+            doctor_id=doctor.id,
+            role="assistant",
+            text=answer,
+            citations=json.dumps(citations_list) if citations_list else None
+        )
+        db.add(user_msg)
+        db.add(asst_msg)
+        db.commit()
+
         return {
             "status":       status,
             "patient_id":   patient_id,
             "patient_name": patient.name,
             "answer":       answer,
-            "citations":    _build_citations(docs) if status == "SUCCESS" else []
+            "citations":    citations_list
         }
 
     except Exception as e:
@@ -162,7 +183,7 @@ def get_chat_history(
     }
 
 
-@router.get("/chat/stream", summary="Stream a patient's indexed documents response")
+@router.get("/stream", summary="Stream a patient's indexed documents response")
 def chat_stream(
     patient_id: str,
     query:      str,
