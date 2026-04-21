@@ -1,5 +1,6 @@
-from sqlalchemy import Column, String, ForeignKey, create_engine
+from sqlalchemy import Column, String, ForeignKey, create_engine, DateTime, Integer, Text
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from datetime import datetime
 import uuid
 import os
 
@@ -46,7 +47,22 @@ class Patient(Base):
     gender     = Column(String, nullable=False)
     doctor_id  = Column(String, ForeignKey("doctors.id"), nullable=False)
 
-    doctor = relationship("Doctor", back_populates="patients")
+    doctor   = relationship("Doctor", back_populates="patients")
+    messages = relationship("ChatMessage", back_populates="patient", cascade="all, delete-orphan")
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    id         = Column(Integer, primary_key=True)
+    patient_id = Column(String, ForeignKey("patients.patient_id"))
+    doctor_id  = Column(String, ForeignKey("doctors.id"))
+    role       = Column(String) # "user" or "assistant"
+    text       = Column(Text)
+    citations  = Column(Text, nullable=True) # JSON string of citations
+    timestamp  = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    patient = relationship("Patient", back_populates="messages")
+    doctor  = relationship("Doctor")
 
 
 def init_db():
