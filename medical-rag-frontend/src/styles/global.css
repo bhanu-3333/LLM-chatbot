@@ -192,3 +192,107 @@ input:focus, select:focus {
 /* Page titles */
 h1 { font-size: 28px; margin-bottom: 24px; color: #e2e8f0; }
 h2 { font-size: 20px; margin-bottom: 16px; color: #cbd5e1; }
+
+/* Split Layout */
+.split-layout {
+  display: flex;
+  gap: 24px;
+  height: calc(100vh - 140px);
+  margin-top: -10px;
+}
+
+.left-panel {
+  flex: 0 0 300px;
+  background: #1a1d27;
+  border: 1px solid #2d3148;
+  border-radius: 12px;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* File List */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-item {
+  padding: 10px 12px;
+  background: #2d314844;
+  border: 1px solid #2d3148;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-item:hover {
+  background: #7c3aed22;
+  border-color: #7c3aed;
+  color: #fff;
+}
+
+/* Modal Viewer */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40px;
+}
+
+.modal-content {
+  background: #1a1d27;
+  width: 100%;
+  height: 100%;
+  max-width: 1100px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 12px 20px;
+  background: #2d3148;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.viewer-iframe {
+  flex: 1;
+  border: none;
+  background: #fff;
+}
+
