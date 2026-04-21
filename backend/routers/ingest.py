@@ -1,5 +1,7 @@
 import os
 import uuid
+import time
+from typing import List
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from sqlalchemy.orm import Session
 
@@ -40,19 +42,19 @@ def _get_file_type_label(ext: str) -> str:
 
 @router.post(
     "/upload",
-    summary="Upload and index a patient document (PDF, Image, Excel, Text)",
+    summary="Upload and index multiple patient documents (PDF, Image, Excel, Text)",
     openapi_extra={
         "requestBody": {
             "content": {
                 "multipart/form-data": {
                     "schema": {
                         "type": "object",
-                        "required": ["patient_name", "age", "gender", "file"],
+                        "required": ["patient_name", "age", "gender", "files"],
                         "properties": {
                             "patient_name": {"type": "string"},
                             "age":          {"type": "string"},
                             "gender":       {"type": "string"},
-                            "file":         {"type": "string", "format": "binary"},
+                            "files":        {"type": "array", "items": {"type": "string", "format": "binary"}},
                         },
                     }
                 }
@@ -61,29 +63,15 @@ def _get_file_type_label(ext: str) -> str:
         }
     },
 )
-async def upload_file(
+async def upload_files(
     patient_name: str = Form(...),
     age:          str = Form(...),
     gender:       str = Form(...),
-    file:         UploadFile = File(...),
+    files:        List[UploadFile] = File(...),
     db:           Session = Depends(get_db),
     doctor:       Doctor  = Depends(get_current_doctor),
 ):
     try:
-        # ── Validate file extension ────────────────────────────────────────────
-        filename = file.filename or ""
-        ext = os.path.splitext(filename)[1].lower()
-
-        if ext not in ALLOWED_EXTENSIONS:
-            allowed_str = ", ".join(sorted(ALLOWED_EXTENSIONS))
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported file type '{ext}'. Allowed: {allowed_str}"
-            )
-
-        file_type_label = _get_file_type_label(ext)
-        print(f"[ingest] Received file '{filename}' (type={file_type_label})")
-
         # ── Patient lookup / creation ──────────────────────────────────────────
         existing = db.query(Patient).filter(
             Patient.doctor_id == doctor.id,
@@ -107,57 +95,63 @@ async def upload_file(
             db.commit()
             print(f"[ingest] New patient '{patient_name}' → {patient_id}")
 
-        # ── Save file to disk ──────────────────────────────────────────────────
         docs_path  = os.path.join(BASE_PATH, doctor.id, patient_id, "docs")
         faiss_path = os.path.join(BASE_PATH, doctor.id, patient_id, "faiss")
         os.makedirs(docs_path,  exist_ok=True)
         os.makedirs(faiss_path, exist_ok=True)
 
-        file_path = os.path.join(docs_path, filename)
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
-        print(f"[ingest] Saved → {file_path}")
+        results = []
+        total_chunks = 0
+        all_chunks = []
 
-        # ── Load & extract content ─────────────────────────────────────────────
-        try:
-            documents = load_file(file_path)
-        except ValueError as e:
-            raise HTTPException(status_code=422, detail=str(e))
+        for file in files:
+            filename = file.filename or "unnamed_file"
+            name_ext = os.path.splitext(filename)
+            # Truncate original filename to 50 chars to avoid Windows MAX_PATH issues
+            safe_basename = name_ext[0][:50].strip()
+            ext = name_ext[1].lower()
 
-        chunks = split_docs(documents)
-        if not chunks:
-            raise HTTPException(
-                status_code=422,
-                detail=f"No content could be extracted from the {file_type_label}"
-            )
+            if ext not in ALLOWED_EXTENSIONS:
+                results.append({"file": filename, "status": "error", "message": f"Unsupported extension {ext}"})
+                continue
 
-        print(f"[ingest] {len(documents)} section(s) → {len(chunks)} chunks for patient '{patient_id}'")
-        save_db(chunks, get_embeddings(), faiss_path)
+            # Save file with timestamp
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            unique_filename = f"{timestamp}_{safe_basename}{ext}"
+            file_path = os.path.join(docs_path, unique_filename)
+            
+            with open(file_path, "wb") as f:
+                f.write(await file.read())
 
-        # Determine pages/sections label
-        file_kind = SUPPORTED_EXTENSIONS.get(ext, "unknown")
-        section_label = (
-            "pages"   if file_kind == "pdf"   else
-            "sheet(s)" if file_kind == "excel" else
-            "section(s)"
-        )
+            try:
+                documents = load_file(file_path)
+                chunks = split_docs(documents)
+                if chunks:
+                    all_chunks.extend(chunks)
+                    total_chunks += len(chunks)
+                    results.append({
+                        "file": filename,
+                        "status": "success",
+                        "sections": len(documents),
+                        "chunks": len(chunks)
+                    })
+                else:
+                    results.append({"file": filename, "status": "error", "message": "No content extracted"})
+            except Exception as e:
+                results.append({"file": filename, "status": "error", "message": str(e)})
+
+        if all_chunks:
+            save_db(all_chunks, get_embeddings(), faiss_path)
 
         return {
-            "status":           "success",
-            "message":          "File uploaded and indexed",
-            "patient_id":       patient_id,
-            "patient_name":     patient_name,
-            "age":              age,
-            "gender":           gender,
-            "file":             filename,
-            "file_type":        file_type_label,
-            "sections_indexed": len(documents),
-            "section_label":    section_label,
-            "chunks_created":   len(chunks),
+            "status":       "success",
+            "message":      f"Processed {len(files)} files",
+            "patient_id":   patient_id,
+            "patient_name": patient_name,
+            "results":      results,
+            "total_chunks": total_chunks
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"[ingest] Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
