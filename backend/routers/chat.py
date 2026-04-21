@@ -136,6 +136,32 @@ def chat(
         print(f"[chat] Unexpected error: {e}")
         return _error(f"Unexpected error: {str(e)}", 500)
 
+@router.get("/history/{patient_id}", summary="Get chat history for a patient")
+def get_chat_history(
+    patient_id: str,
+    db:         Session = Depends(get_db),
+    doctor:     Doctor  = Depends(get_current_doctor),
+):
+    from models.db import ChatMessage
+    messages = db.query(ChatMessage).filter(
+        ChatMessage.patient_id == patient_id,
+        ChatMessage.doctor_id  == doctor.id
+    ).order_by(ChatMessage.timestamp.asc()).all()
+
+    return {
+        "status": "success",
+        "messages": [
+            {
+                "role":      m.role,
+                "text":      m.text,
+                "citations": json.loads(m.citations) if m.citations else [],
+                "timestamp": m.timestamp.isoformat()
+            }
+            for m in messages
+        ]
+    }
+
+
 @router.get("/chat/stream", summary="Stream a patient's indexed documents response")
 def chat_stream(
     patient_id: str,
@@ -143,6 +169,7 @@ def chat_stream(
     db:         Session = Depends(get_db),
     doctor:     Doctor  = Depends(get_current_doctor),
 ):
+    from models.db import ChatMessage
     try:
         if not query or not query.strip():
             return _error("Please enter a valid question")
@@ -155,6 +182,16 @@ def chat_stream(
         if not patient:
             return _error("Patient not found or access denied", 404)
 
+        # 1. Save User Message immediately
+        user_msg = ChatMessage(
+            patient_id=patient_id,
+            doctor_id=doctor.id,
+            role="user",
+            text=query
+        )
+        db.add(user_msg)
+        db.commit()
+
         faiss_path = os.path.join(BASE_PATH, doctor.id, patient_id, "faiss")
         if not os.path.exists(os.path.join(faiss_path, "index.faiss")):
             return _error("Patient data not available", 404)
@@ -166,8 +203,10 @@ def chat_stream(
         requested_page = _extract_page(query)
 
         def stream_generator():
+            full_answer = ""
+            citations_list = []
             try:
-                # 1. Retrieval (inside generator so stream starts immediately)
+                # Retrieval
                 if requested_page is not None:
                     all_docs = list(db_index.docstore._dict.values())
                     docs = [d for d in all_docs if d.metadata.get("page") == requested_page][:TOP_K_CHUNKS]
@@ -175,18 +214,41 @@ def chat_stream(
                     docs = db_index.similarity_search(query, k=TOP_K_CHUNKS)
 
                 if not docs:
-                    yield json.dumps({"answer": "No relevant data found", "citations": []}) + "\n"
+                    ans = "No relevant data found"
+                    yield json.dumps({"answer": ans, "citations": []}) + "\n"
+                    # Save assistant response
+                    asst_msg = ChatMessage(patient_id=patient_id, doctor_id=doctor.id, role="assistant", text=ans)
+                    db.add(asst_msg)
+                    db.commit()
                     return
 
                 context = "\n".join([d.page_content for d in docs])
-                citations = _build_citations(docs)
+                citations_list = _build_citations(docs)
 
-                # 2. Send citations first
-                yield json.dumps({"citations": citations}) + "\n"
+                # Send citations
+                yield json.dumps({"citations": citations_list}) + "\n"
 
-                # 3. Stream the answer (already JSON from stream_answer)
+                # Stream and collect the answer
                 for line in stream_answer(context, query):
                     yield line
+                    try:
+                        data = json.loads(line)
+                        if "chunk" in data:
+                            full_answer += data["chunk"]
+                    except: pass
+                
+                # 2. Save Assistant Message once complete
+                if full_answer.strip():
+                    asst_msg = ChatMessage(
+                        patient_id=patient_id,
+                        doctor_id=doctor.id,
+                        role="assistant",
+                        text=full_answer.strip(),
+                        citations=json.dumps(citations_list)
+                    )
+                    db.add(asst_msg)
+                    db.commit()
+
             except Exception as e:
                 yield json.dumps({"error": str(e)}) + "\n"
 
