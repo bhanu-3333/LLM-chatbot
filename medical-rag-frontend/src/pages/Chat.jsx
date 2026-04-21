@@ -12,7 +12,10 @@ export default function Chat() {
   const [query, setQuery]       = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading]   = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const bottomRef               = useRef(null);
+  const fileInputRef            = useRef(null);
 
   useEffect(() => {
     fetchPatientData();
@@ -55,7 +58,41 @@ export default function Chat() {
 
   const getFileUrl = (filename) => {
     const token = localStorage.getItem("token");
+    // Using 8080 as the backend port
     return `http://127.0.0.1:8080/patients/${patient_id}/files/${filename}?token=${token}`;
+  };
+
+  const handleFileUpload = async (selectedFiles) => {
+    if (!selectedFiles || selectedFiles.length === 0) return;
+    
+    setUploading(true);
+    const formData = new FormData();
+    for (let i = 0; i < selectedFiles.length; i++) {
+      formData.append("files", selectedFiles[i]);
+    }
+
+    try {
+      await API.post(`/patients/${patient_id}/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      await fetchFiles(); // Refresh list
+    } catch (e) {
+      console.error("Upload failed", e);
+      alert("Failed to upload reports. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onFileChange = (e) => {
+    handleFileUpload(e.target.files);
+    e.target.value = ""; // Reset
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    handleFileUpload(e.dataTransfer.files);
   };
 
   const send = async () => {
@@ -201,23 +238,8 @@ export default function Chat() {
         </h1>
 
         <div className="split-layout">
-          {/* Left Side: Reports Panel */}
-          <div className="left-panel">
-            <h2 style={{ fontSize: 16, marginBottom: 12, display: "flex", alignItems: "center", gap: 8, color: "#a78bfa" }}>
-              📂 Patient Reports
-            </h2>
-            <div className="file-list">
-              {files.length === 0 && <p style={{ fontSize: 13, color: "#64748b" }}>No reports uploaded yet.</p>}
-              {files.map(f => (
-                <div key={f} className="file-item" onClick={() => setSelectedFile(f)} title={f}>
-                  {f.toLowerCase().match(/\.(jpg|jpeg|png)$/) ? "🖼️" : "📄"} {f}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Side: Chat Interface */}
-          <div className="right-panel">
+          {/* Left Side: Chat Interface */}
+          <div className="right-panel" style={{ flex: 1.5 }}>
             <div className="chat-window" style={{ flex: 1, maxHeight: "none" }}>
               {messages.length === 0 && (
                 <div style={{ color: "#64748b", textAlign: "center", marginTop: 120 }}>
@@ -265,6 +287,56 @@ export default function Chat() {
               <button className="btn-primary" onClick={send} disabled={loading}>
                 {loading ? "..." : "Send"}
               </button>
+            </div>
+          </div>
+
+          {/* Right Side: Reports Panel */}
+          <div 
+            className={`left-panel ${dragOver ? "drag-active" : ""}`}
+            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <h2 style={{ fontSize: 16, margin: 0, display: "flex", alignItems: "center", gap: 8, color: "#a78bfa" }}>
+                📂 Patient Reports
+              </h2>
+              <button 
+                className="btn-primary" 
+                style={{ padding: "6px 12px", fontSize: 12 }}
+                onClick={() => fileInputRef.current.click()}
+                disabled={uploading}
+              >
+                {uploading ? "Uploading..." : "+ Upload Reports"}
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                style={{ display: "none" }} 
+                multiple 
+                accept=".pdf" 
+                onChange={onFileChange}
+              />
+            </div>
+
+            <div className="file-list" style={{ flex: 1, overflowY: "auto" }}>
+              {files.length === 0 && !uploading && (
+                <div style={{ textAlign: "center", marginTop: 40, color: "#64748b" }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
+                  <p style={{ fontSize: 13 }}>No reports uploaded yet.</p>
+                  <p style={{ fontSize: 11, marginTop: 4 }}>Drag & drop PDFs here to upload</p>
+                </div>
+              )}
+              {files.map(f => (
+                <div key={f} className="file-item" onClick={() => setSelectedFile(f)} title={f}>
+                  {f.toLowerCase().match(/\.(jpg|jpeg|png)$/) ? "🖼️" : "📄"} {f}
+                </div>
+              ))}
+              {uploading && (
+                <div className="file-item" style={{ opacity: 0.6, fontStyle: "italic" }}>
+                  ⏳ Uploading new files...
+                </div>
+              )}
             </div>
           </div>
         </div>
