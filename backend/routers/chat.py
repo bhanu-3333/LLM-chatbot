@@ -12,7 +12,7 @@ from services.embedder import get_embeddings
 from services.faiss_manager import load_db
 from services.ollama_client import stream_answer, generate_answer, NOT_FOUND_RESPONSE
 
-router = APIRouter(tags=["Chat"])
+router = APIRouter(prefix="/chat", tags=["Chat"])
 # Cache for loaded FAISS indices to speed up multiple queries
 _INDEX_CACHE = {}
 
