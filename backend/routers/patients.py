@@ -151,7 +151,12 @@ async def upload_patient_files(
         # Generate filename with timestamp
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         original_name = file.filename or "unnamed_file"
-        new_filename = f"{timestamp}_{original_name}"
+        name_ext = os.path.splitext(original_name)
+        # Truncate to 50 chars to avoid Windows MAX_PATH issues
+        safe_basename = name_ext[0][:50].strip()
+        ext = name_ext[1].lower()
+        
+        new_filename = f"{timestamp}_{safe_basename}{ext}"
         
         file_path = os.path.join(docs_path, new_filename)
         
