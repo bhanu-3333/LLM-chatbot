@@ -29,7 +29,7 @@ function formatBytes(bytes) {
 }
 
 export default function Upload() {
-  const [file, setFile]           = useState(null);
+  const [files, setFiles]         = useState([]);
   const [patientName, setName]    = useState("");
   const [age, setAge]             = useState("");
   const [gender, setGender]       = useState("");
@@ -39,29 +39,40 @@ export default function Upload() {
   const [dragOver, setDragOver]   = useState(false);
   const fileInputRef              = useRef(null);
 
-  const fileInfo = getFileInfo(file);
+  const handleFiles = (newFiles) => {
+    const allowed = ["pdf", "jpg", "jpeg", "png", "xlsx", "xls", "txt", "csv"];
+    const valid = [];
+    let errorMsg = "";
+
+    Array.from(newFiles).forEach(f => {
+      const ext = f.name.split(".").pop().toLowerCase();
+      if (allowed.includes(ext)) {
+        valid.push(f);
+      } else {
+        errorMsg = `❌ Unsupported file type ".${ext}" ignored.`;
+      }
+    });
+
+    if (errorMsg) setErr(errorMsg);
+    else setErr("");
+
+    setFiles(prev => [...prev, ...valid]);
+  };
+
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const dropped = e.dataTransfer.files[0];
-    if (dropped) validateAndSet(dropped);
-  };
-
-  const validateAndSet = (f) => {
-    const ext = f.name.split(".").pop().toLowerCase();
-    const allowed = ["pdf", "jpg", "jpeg", "png", "xlsx", "xls", "txt", "csv"];
-    if (!allowed.includes(ext)) {
-      setErr(`❌ Unsupported file type ".${ext}". Allowed: ${allowed.join(", ")}`);
-      return;
-    }
-    setErr("");
-    setFile(f);
+    handleFiles(e.dataTransfer.files);
   };
 
   const upload = async () => {
-    if (!file || !patientName || !age || !gender) {
-      setErr("Please fill all fields and select a file"); return;
+    if (files.length === 0 || !patientName || !age || !gender) {
+      setErr("Please fill all fields and select at least one file"); 
+      return;
     }
     setMsg(""); setErr(""); setLoading(true);
     try {
@@ -69,15 +80,21 @@ export default function Upload() {
       form.append("patient_name", patientName);
       form.append("age", age);
       form.append("gender", gender);
-      form.append("file", file);
+      files.forEach(f => {
+        form.append("files", f);
+      });
 
-      const res = await API.post("/upload", form);
+      const res = await API.post("/upload", form, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
       const d = res.data;
+      
+      const successCount = d.results.filter(r => r.status === "success").length;
       setMsg(
         `✅ ${d.message} — Patient ID: ${d.patient_id} · ` +
-        `${d.sections_indexed} ${d.section_label} · ${d.chunks_created} chunks indexed`
+        `${successCount} files indexed · ${d.total_chunks} chunks created`
       );
-      setName(""); setAge(""); setGender(""); setFile(null);
+      setName(""); setAge(""); setGender(""); setFiles([]);
     } catch (e) {
       setErr(e.response?.data?.detail || "Upload failed. Please try again.");
     } finally {
@@ -88,32 +105,36 @@ export default function Upload() {
   return (
     <div>
       <Navbar />
-      <div className="page" style={{ maxWidth: 560 }}>
-        <h1 style={{ marginBottom: 4 }}>Upload Patient Record</h1>
+      <div className="page" style={{ maxWidth: 600 }}>
+        <h1 style={{ marginBottom: 4 }}>Upload Patient Records</h1>
         <p style={{ color: "var(--text-secondary, #888)", marginBottom: 24, fontSize: 14 }}>
-          Supported: PDF, JPEG, PNG, Excel (.xlsx/.xls), TXT, CSV
+          Upload multiple reports for a patient (PDF, Images, Excel, Text)
         </p>
 
         {/* Patient fields */}
-        <input
-          placeholder="Patient Name"
-          value={patientName}
-          onChange={e => setName(e.target.value)}
-        />
-        <input
-          placeholder="Age"
-          type="number"
-          min="0"
-          max="150"
-          value={age}
-          onChange={e => setAge(e.target.value)}
-        />
-        <select value={gender} onChange={e => setGender(e.target.value)}>
-          <option value="">Select Gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Other">Other</option>
-        </select>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 120px", gap: 12, marginBottom: 12 }}>
+          <input
+            placeholder="Patient Name"
+            value={patientName}
+            onChange={e => setName(e.target.value)}
+            style={{ marginBottom: 0 }}
+          />
+          <input
+            placeholder="Age"
+            type="number"
+            min="0"
+            max="150"
+            value={age}
+            onChange={e => setAge(e.target.value)}
+            style={{ marginBottom: 0 }}
+          />
+          <select value={gender} onChange={e => setGender(e.target.value)} style={{ marginBottom: 0 }}>
+            <option value="">Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
 
         {/* Drag-and-drop zone */}
         <div
@@ -122,101 +143,95 @@ export default function Upload() {
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           style={{
-            marginTop: 12,
-            border: `2px dashed ${dragOver ? "#6c63ff" : file ? (fileInfo?.color || "#6c63ff") : "#444"}`,
+            border: `2px dashed ${dragOver ? "#6c63ff" : "#444"}`,
             borderRadius: 12,
-            padding: "28px 20px",
+            padding: "32px 20px",
             textAlign: "center",
             cursor: "pointer",
-            background: dragOver
-              ? "rgba(108,99,255,0.08)"
-              : file
-              ? `${fileInfo?.color}14`
-              : "rgba(255,255,255,0.03)",
+            background: dragOver ? "rgba(108,99,255,0.08)" : "rgba(255,255,255,0.03)",
             transition: "all 0.25s ease",
             userSelect: "none",
           }}
         >
-          {file ? (
-            <div>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>{fileInfo?.icon}</div>
-              <div style={{ fontWeight: 600, fontSize: 15, color: fileInfo?.color }}>
-                {fileInfo?.label} — {file.name}
-              </div>
-              <div style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
-                {formatBytes(file.size)} · Click to change file
-              </div>
+          <div>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>📂</div>
+            <div style={{ fontWeight: 600, fontSize: 15 }}>
+              Drag & drop or <span style={{ color: "#6c63ff" }}>browse</span>
             </div>
-          ) : (
-            <div>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📂</div>
-              <div style={{ fontWeight: 600, fontSize: 15 }}>
-                Drag & drop or <span style={{ color: "#6c63ff" }}>browse</span>
-              </div>
-              <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>
-                PDF · JPEG · PNG · Excel · TXT · CSV
-              </div>
+            <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>
+              Select multiple PDF, Images, Excel, or Text files
             </div>
-          )}
+          </div>
         </div>
 
         {/* Hidden native input */}
         <input
           ref={fileInputRef}
           type="file"
+          multiple
           accept={ACCEPT_STRING}
           style={{ display: "none" }}
           onChange={e => {
-            const f = e.target.files[0];
-            if (f) validateAndSet(f);
-            e.target.value = ""; // reset so same file can be re-selected
+            handleFiles(e.target.files);
+            e.target.value = "";
           }}
         />
 
-        {/* File type chips */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-          {[
-            { ext: "PDF",   icon: "📄", color: "#e74c3c" },
-            { ext: "JPEG",  icon: "🖼️", color: "#9b59b6" },
-            { ext: "PNG",   icon: "🖼️", color: "#9b59b6" },
-            { ext: "Excel", icon: "📊", color: "#27ae60" },
-            { ext: "TXT",   icon: "📝", color: "#2980b9" },
-            { ext: "CSV",   icon: "📝", color: "#2980b9" },
-          ].map(({ ext, icon, color }) => (
-            <span
-              key={ext}
-              style={{
-                background: `${color}22`,
-                color,
-                border: `1px solid ${color}44`,
-                borderRadius: 20,
-                padding: "3px 10px",
-                fontSize: 12,
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              {icon} {ext}
-            </span>
-          ))}
-        </div>
+        {/* Selected files list */}
+        {files.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <h3 style={{ fontSize: 14, marginBottom: 10, color: "#94a3b8" }}>Selected Files ({files.length})</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {files.map((f, i) => {
+                const info = getFileInfo(f);
+                return (
+                  <div key={i} style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 12, 
+                    padding: "8px 12px", 
+                    background: "#1a1d27", 
+                    borderRadius: 8,
+                    border: "1px solid #2d3148"
+                  }}>
+                    <span style={{ fontSize: 20 }}>{info.icon}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {f.name}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#64748b" }}>{info.label} · {formatBytes(f.size)}</div>
+                    </div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                      style={{ background: "none", color: "#ef4444", padding: 4, fontSize: 18 }}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <button
           className="btn-primary"
-          style={{ width: "100%", marginTop: 18 }}
+          style={{ width: "100%", marginTop: 24, padding: 14 }}
           onClick={upload}
-          disabled={loading}
+          disabled={loading || files.length === 0}
         >
-          {loading ? "⏳ Uploading & Indexing..." : "⬆️ Upload & Analyze"}
+          {loading ? "⏳ Uploading & Indexing..." : `⬆️ Upload ${files.length} Reports`}
         </button>
 
         {msg && (
-          <p className="msg-success" style={{ marginTop: 12 }}>{msg}</p>
+          <div className="msg-success" style={{ marginTop: 16, padding: 12, background: "#065f4622", borderRadius: 8, border: "1px solid #065f46" }}>
+            {msg}
+          </div>
         )}
         {err && (
-          <p className="msg-error" style={{ marginTop: 12 }}>{err}</p>
+          <div className="msg-error" style={{ marginTop: 16, padding: 12, background: "#991b1b22", borderRadius: 8, border: "1px solid #991b1b" }}>
+            {err}
+          </div>
         )}
       </div>
     </div>
