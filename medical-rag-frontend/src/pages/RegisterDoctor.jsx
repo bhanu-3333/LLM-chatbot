@@ -4,7 +4,7 @@ import API from "../api/api";
 import "../styles/global.css";
 
 export default function RegisterDoctor() {
-  const [form, setForm] = useState({ name: "", specialization: "", email: "", password: "", hospital_code: "" });
+  const [form, setForm] = useState({ name: "", specialization: "", email: "", password: "" });
   const [msg, setMsg]   = useState("");
   const [err, setErr]   = useState("");
   const nav = useNavigate();
@@ -29,7 +29,7 @@ export default function RegisterDoctor() {
       <input placeholder="Specialization"  onChange={e => set("specialization", e.target.value)} />
       <input placeholder="Email"           onChange={e => set("email",          e.target.value)} />
       <input placeholder="Password" type="password" onChange={e => set("password", e.target.value)} />
-      <input placeholder="Hospital Code"   onChange={e => set("hospital_code",  e.target.value)} />
+
       <button className="btn-primary" style={{ width: "100%" }} onClick={submit}>Register</button>
       {msg && <p className="msg-success">{msg}</p>}
       {err && <p className="msg-error">{err}</p>}
