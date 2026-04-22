@@ -12,6 +12,7 @@ from services.embedder import get_embeddings
 from services.chunker import split_docs
 from services.faiss_manager import save_db
 from services.file_loader import load_file, SUPPORTED_EXTENSIONS
+from routers.chat import invalidate_cache
 
 router = APIRouter(tags=["Ingestion"])
 
@@ -142,6 +143,8 @@ async def upload_files(
 
         if all_chunks:
             save_db(all_chunks, get_embeddings(), faiss_path)
+            # Invalidate cache so next chat loads the updated index
+            invalidate_cache(faiss_path)
 
         return {
             "status":       "success",
