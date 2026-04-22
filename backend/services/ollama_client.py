@@ -8,8 +8,10 @@ OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 NOT_FOUND_RESPONSE = "I cannot answer from the provided documents."
 
 _NOT_FOUND_SIGNALS = [
-    "cannot answer", "not found", "no information",
-    "not present", "not provided", "context does not", "context doesn't"
+    "cannot answer from the provided documents",
+    "not found in the provided",
+    "not present in the provided",
+    "not available in the provided",
 ]
 
 def _dedup_words(text: str) -> str:
@@ -23,14 +25,15 @@ def _dedup_words(text: str) -> str:
     return " ".join(result)
 
 def stream_answer(context: str, question: str):
-    prompt = f"""You are a medical assistant. Answer using ONLY the context below.
-Be concise and direct. Do not repeat yourself.
-If answer not in context, say exactly: I cannot answer from the provided documents.
+    prompt = f"""Extract the exact value from the context. Do not explain or interpret.
+
+Find this exact term in the context: "{question}"
+Copy the line containing that term exactly as it appears.
+If the exact term does not exist in the context, write only: I cannot answer from the provided documents.
 
 Context:
 {context}
 
-Question: {question}
 Answer:"""
 
     payload = {
