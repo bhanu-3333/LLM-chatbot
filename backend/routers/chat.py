@@ -16,6 +16,11 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 # Cache for loaded FAISS indices to speed up multiple queries
 _INDEX_CACHE = {}
 
+def invalidate_cache(faiss_path: str):
+    """Clear cached index when new documents are uploaded."""
+    _INDEX_CACHE.pop(faiss_path, None)
+    print(f"[chat] Cache invalidated for: {faiss_path}")
+
 
 WORD_TO_NUM = {
     "first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5,
@@ -113,7 +118,11 @@ def chat(
                     "citations":  []
                 }
         else:
-            docs = db_index.similarity_search(query, k=TOP_K_CHUNKS)
+            scored = db_index.similarity_search_with_score(query, k=TOP_K_CHUNKS)
+            scored.sort(key=lambda x: x[1])
+            docs = [doc for doc, score in scored]
+            print(f"[chat] Top scores: {[round(s,3) for _,s in scored]}")
+            print(f"[chat] Sources: {[os.path.basename(d.metadata.get('source','?')) for d in docs]}")
 
         print(f"[chat] Retrieved {len(docs)} chunks")
 
@@ -227,12 +236,18 @@ def chat_stream(
             full_answer = ""
             citations_list = []
             try:
-                # Retrieval
+                # Retrieval — score-ranked across ALL documents in the patient's index
                 if requested_page is not None:
                     all_docs = list(db_index.docstore._dict.values())
                     docs = [d for d in all_docs if d.metadata.get("page") == requested_page][:TOP_K_CHUNKS]
                 else:
-                    docs = db_index.similarity_search(query, k=TOP_K_CHUNKS)
+                    # Use score-based retrieval to rank chunks from ALL uploaded files
+                    scored = db_index.similarity_search_with_score(query, k=TOP_K_CHUNKS)
+                    # Sort by score ascending (lower = more similar in FAISS L2)
+                    scored.sort(key=lambda x: x[1])
+                    docs = [doc for doc, score in scored]
+                    print(f"[chat] Top scores: {[round(s,3) for _,s in scored]}")
+                    print(f"[chat] Sources: {[os.path.basename(d.metadata.get('source','?')) for d in docs]}")
 
                 if not docs:
                     ans = "No relevant data found"
