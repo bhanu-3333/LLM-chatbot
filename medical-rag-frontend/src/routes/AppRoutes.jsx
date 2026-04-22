@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "../pages/Login";
-import RegisterHospital from "../pages/RegisterHospital";
+
 import RegisterDoctor from "../pages/RegisterDoctor";
 import Dashboard from "../pages/Dashboard";
 import Upload from "../pages/Upload";
@@ -13,7 +13,7 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/register-hospital" element={<RegisterHospital />} />
+
         <Route path="/register-doctor" element={<RegisterDoctor />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
