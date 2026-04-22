@@ -11,17 +11,6 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
 
-class Hospital(Base):
-    __tablename__ = "hospitals"
-
-    id            = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    hospital_name = Column(String, nullable=False)
-    hospital_code = Column(String, unique=True, nullable=False)
-    admin_email   = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-
-    doctors  = relationship("Doctor",  back_populates="hospital")
-
 
 class Doctor(Base):
     __tablename__ = "doctors"
@@ -31,9 +20,8 @@ class Doctor(Base):
     specialization = Column(String, nullable=False)
     email          = Column(String, unique=True, nullable=False)
     password_hash  = Column(String, nullable=False)
-    hospital_id    = Column(String, ForeignKey("hospitals.id"), nullable=False)
+    hospital_id    = None # Optional now
 
-    hospital = relationship("Hospital", back_populates="doctors")
     patients = relationship("Patient",  back_populates="doctor")
 
 
