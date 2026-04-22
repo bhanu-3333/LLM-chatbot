@@ -49,8 +49,6 @@ export default function Login() {
       </button>
       {error && <p className="msg-error">{error}</p>}
       <div className="auth-links">
-        <a onClick={() => nav("/register-hospital")}>Register Hospital</a>
-        <span>·</span>
         <a onClick={() => nav("/register-doctor")}>Register Doctor</a>
       </div>
     </div>
