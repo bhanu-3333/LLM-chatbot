@@ -4,6 +4,10 @@ import img1 from '../assets/img1.jpg';
 import img2 from '../assets/img2.jpeg';
 import img3 from '../assets/img3.jpeg';
 import img4 from '../assets/img4.jpeg';
+import logoutIcon from '../assets/logout.png';
+import uploadIcon from '../assets/upload.png';
+import recordsIcon from '../assets/records.png';
+import logoutIcon from '../assets/logout.png';
 
 export default function Dashboard() {
   const nav = useNavigate();
@@ -30,16 +34,16 @@ export default function Dashboard() {
     <div className="home-root">
       <div className="page-wrapper">
         
-        {/* Navbar — same as Home but with Logout */}
+        {/* Navbar */}
         <nav className="navbar">
           <div className="logo">LLM Chatbot</div>
           <div className="nav-links">
-            <a href="#" className="nav-item">Product</a>
-            <a href="#" className="nav-item">Service</a>
-            <a href="#" className="nav-item">Features</a>
-            <a href="#" className="nav-item">Contact</a>
+            <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
+            <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
           </div>
           <button className="login-btn-nav" onClick={logout}>
+            <img src={logoutIcon} alt="Logout" style={{ width: '16px', height: '16px', marginRight: '6px' }} />
             Logout
           </button>
         </nav>
@@ -62,16 +66,30 @@ export default function Dashboard() {
                 <button 
                   className="cta-button" 
                   onClick={() => nav('/upload')}
-                  style={{ flex: 1 }}
+                  style={{ 
+                    flex: 'none',
+                    minWidth: '180px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
                 >
-                  📤 Upload Report
+                  <img src={uploadIcon} alt="Upload" style={{ width: '18px', height: '18px', marginRight: '8px' }} />
+                  Upload Report
                 </button>
                 <button 
                   className="cta-button" 
                   onClick={() => nav('/library')}
-                  style={{ flex: 1 }}
+                  style={{ 
+                    flex: 'none',
+                    minWidth: '180px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
                 >
-                  📚 Library
+                  <img src={recordsIcon} alt="Library" style={{ width: '18px', height: '18px', marginRight: '8px' }} />
+                  Library
                 </button>
               </div>
             </div>
