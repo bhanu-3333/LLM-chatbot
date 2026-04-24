@@ -1,21 +1,34 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import API from "../api/api";
-import Navbar from "../components/Navbar";
-import "../styles/global.css";
+import "../styles/Home.css";
+import logoutIcon from "../assets/logout.png";
+import mikeIcon from "../assets/mike.png";
+import uploadIcon from "../assets/upload.png";
+import chatIcon from "../assets/chat.png";
+import imageIcon from "../assets/image.png";
+import fileIcon from "../assets/open-folder.png";
 
 export default function Chat() {
-  const { patient_id }          = useParams();
-  const [patient, setPatient]   = useState(null);
-  const [files, setFiles]       = useState([]);
+  const { patient_id } = useParams();
+  const nav = useNavigate();
+  const name = localStorage.getItem("doctor_name") || "Doctor";
+  const [patient, setPatient] = useState(null);
+  const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [query, setQuery]       = useState("");
+  const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading]   = useState(false);
+  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const bottomRef               = useRef(null);
-  const fileInputRef            = useRef(null);
+  const bottomRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("doctor_name");
+    nav("/");
+  };
 
   useEffect(() => {
     fetchPatientData();
@@ -63,7 +76,7 @@ export default function Chat() {
 
   const handleFileUpload = async (selectedFiles) => {
     if (!selectedFiles || selectedFiles.length === 0) return;
-    
+
     setUploading(true);
     const formData = new FormData();
     for (let i = 0; i < selectedFiles.length; i++) {
@@ -74,7 +87,7 @@ export default function Chat() {
       await API.post(`/patients/${patient_id}/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-      await fetchFiles(); // Refresh list
+      await fetchFiles();
     } catch (e) {
       console.error("Upload failed", e);
       alert("Failed to upload reports. Please try again.");
@@ -85,7 +98,7 @@ export default function Chat() {
 
   const onFileChange = (e) => {
     handleFileUpload(e.target.files);
-    e.target.value = ""; // Reset
+    e.target.value = "";
   };
 
   const onDrop = (e) => {
@@ -100,9 +113,7 @@ export default function Chat() {
     setQuery("");
     setLoading(true);
 
-    // Add user message to state
     setMessages(prev => [...prev, { role: "user", text: q }]);
-    // Add empty assistant message to state (for streaming)
     setMessages(prev => [...prev, { role: "assistant", text: "", citations: [] }]);
 
     try {
@@ -228,161 +239,368 @@ export default function Chat() {
   };
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <Navbar />
-      
-      <div className="page" style={{ flex: 1, maxWidth: "1400px", margin: "0 auto", width: "100%" }}>
-        <h1 style={{ marginBottom: 20 }}>
-          {patient ? `${patient.name} (${patient.patient_id})` : `Patient ${patient_id}`}
-        </h1>
+    <div className="home-root">
+      <div className="page-wrapper">
 
-        <div className="split-layout">
-          {/* Left Side: Chat Interface */}
-          <div className="right-panel" style={{ flex: 1.5 }}>
-            <div className="chat-window" style={{ flex: 1, maxHeight: "none" }}>
-              {messages.length === 0 && (
-                <div style={{ color: "#64748b", textAlign: "center", marginTop: 120 }}>
-                  <div style={{ fontSize: 40, marginBottom: 10 }}>💬</div>
-                  <p>Ask a question about this patient's medical history or uploaded reports.</p>
+        {/* Navbar */}
+        <nav className="navbar">
+          <div className="logo">LLM Chatbot</div>
+          <div className="nav-links">
+            <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
+            <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+          </div>
+          <button className="login-btn-nav" onClick={logout}>
+            <img src={logoutIcon} alt="Logout" style={{ width: '16px', height: '16px', marginRight: '6px' }} />
+            Logout
+          </button>
+        </nav>
+
+        {/* Hero Container - Single screen with scroll */}
+        <div className="hero-container" style={{ padding: '40px', overflow: 'hidden', display: 'flex', flexDirection: 'column', marginBottom: '40px' }}>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <h1 style={{
+              fontFamily: 'Playfair Display, serif',
+              fontSize: 'clamp(2rem, 3.5vw, 2.5rem)',
+              lineHeight: 1.1,
+              color: '#000',
+              marginBottom: '24px',
+              fontWeight: 900
+            }}>
+              {patient ? patient.name : `Patient ${patient_id}`}
+            </h1>
+
+            {/* Split layout with scroll */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '20px', flex: 1, minHeight: 0 }}>
+
+              {/* Left: Chat - scrollable */}
+              <div style={{ display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: '20px', padding: '20px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', minHeight: 0 }}>
+                <div style={{ flex: 1, overflowY: 'auto', marginBottom: '16px', paddingRight: '8px' }}>
+                  {messages.length === 0 && (
+                    <div style={{ textAlign: 'center', marginTop: '100px', color: '#888' }}>
+                      <img 
+                        src={chatIcon} 
+                        alt="Chat" 
+                        style={{ 
+                          width: '48px', 
+                          height: '48px', 
+                          marginBottom: '12px',
+                          opacity: 0.5
+                        }} 
+                      />
+                      <p>Ask a question about this patient's medical history.</p>
+                    </div>
+                  )}
+                  {messages.map((m, i) => (
+                    <div key={i} style={{
+                      marginBottom: '12px',
+                      textAlign: m.role === "user" ? 'right' : 'left'
+                    }}>
+                      <span style={{
+                        display: 'inline-block',
+                        maxWidth: '75%',
+                        padding: '10px 14px',
+                        borderRadius: m.role === "user" ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                        background: m.role === "user" ? '#000' : '#f4f4f0',
+                        color: m.role === "user" ? '#fff' : '#1a1a1a',
+                        fontSize: '14px',
+                        lineHeight: 1.5,
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        {(m.text === "" && loading && i === messages.length - 1) ? "..." : (m.text || "...")}
+                      </span>
+                      {m.citations?.length > 0 && (
+                        <div style={{ fontSize: '11px', color: '#888', marginTop: '4px', paddingLeft: '4px' }}>
+                          {m.citations.map((c, idx) => (
+                            <span
+                              key={idx}
+                              onClick={() => setSelectedFile(c)}
+                              style={{
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                marginRight: '10px'
+                              }}
+                            >
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div ref={bottomRef} />
                 </div>
-              )}
-              {messages.map((m, i) => (
-                <div key={i} className={m.role === "user" ? "chat-bubble-q" : "chat-bubble-a"}>
-                  <span>
-                    {(m.text === "" && loading && i === messages.length - 1) ? "..." : (m.text || "...")}
-                  </span>
-                  {m.citations?.length > 0 && (
-                    <div className="chat-citations">
-                      {m.citations.map((c, idx) => (
-                        <span 
-                          key={idx} 
-                          onClick={() => setSelectedFile(c)} 
-                          style={{ cursor: "pointer", color: "#a78bfa", textDecoration: "underline", marginRight: 10 }}
-                        >
-                          {c}
-                        </span>
-                      ))}
+
+                {/* Input row */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={toggleListening}
+                    style={{
+                      background: isListening ? '#dc2626' : '#f4f4f0',
+                      color: isListening ? '#fff' : '#000',
+                      border: 'none',
+                      padding: '0 16px',
+                      borderRadius: '50px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Voice Assistant"
+                  >
+                    <img 
+                      src={mikeIcon} 
+                      alt="Voice" 
+                      style={{ 
+                        width: '20px', 
+                        height: '20px',
+                        filter: isListening ? 'brightness(0) invert(1)' : 'none'
+                      }} 
+                    />
+                  </button>
+                  <input
+                    value={query}
+                    placeholder={isListening ? "Listening..." : "Ask about this patient..."}
+                    onChange={e => setQuery(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && !loading && send()}
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      border: '1.5px solid #e0e0d8',
+                      borderRadius: '50px',
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: '14px',
+                      color: '#1a1a1a',
+                      background: '#fafaf8',
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    onClick={send}
+                    disabled={loading}
+                    style={{
+                      background: '#000',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '50px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      opacity: loading ? 0.5 : 1
+                    }}
+                  >
+                    {loading ? "..." : "Send"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Files - scrollable */}
+              <div
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={onDrop}
+                style={{
+                  background: '#fff',
+                  borderRadius: '20px',
+                  padding: '20px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  border: dragOver ? '2px dashed #000' : '2px dashed transparent',
+                  minHeight: 0
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>📂 Patient Records</h3>
+                  <button
+                    onClick={() => fileInputRef.current.click()}
+                    disabled={uploading}
+                    style={{
+                      background: '#000',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '50px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: uploading ? 'not-allowed' : 'pointer',
+                      opacity: uploading ? 0.5 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <img 
+                      src={uploadIcon} 
+                      alt="Upload" 
+                      style={{ 
+                        width: '12px', 
+                        height: '12px',
+                        filter: 'brightness(0) invert(1)'
+                      }} 
+                    />
+                    {uploading ? "Uploading..." : "Upload"}
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    multiple
+                    accept=".pdf"
+                    onChange={onFileChange}
+                  />
+                </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                  {files.length === 0 && !uploading && (
+                    <div style={{ textAlign: 'center', marginTop: '60px', color: '#888' }}>
+                      <div style={{ fontSize: '36px', marginBottom: '8px' }}>📄</div>
+                      <p style={{ fontSize: '12px' }}>No reports yet.</p>
+                      <p style={{ fontSize: '11px', marginTop: '4px' }}>Drag & drop PDFs here</p>
+                    </div>
+                  )}
+                  {files.map(f => (
+                    <div
+                      key={f}
+                      onClick={() => setSelectedFile(f)}
+                      style={{
+                        padding: '10px 12px',
+                        background: '#f4f4f0',
+                        border: '1px solid #e0e0d8',
+                        borderRadius: '10px',
+                        fontSize: '12px',
+                        color: '#1a1a1a',
+                        cursor: 'pointer',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = '#000';
+                        e.currentTarget.style.color = '#fff';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = '#f4f4f0';
+                        e.currentTarget.style.color = '#1a1a1a';
+                      }}
+                      title={f}
+                    >
+                      {f.toLowerCase().match(/\.(jpg|jpeg|png)$/) ? "🖼️" : "📄"} {f}
+                    </div>
+                  ))}
+                  {uploading && (
+                    <div style={{ padding: '10px 12px', opacity: 0.6, fontStyle: 'italic', fontSize: '12px' }}>
+                      ⏳ Uploading...
                     </div>
                   )}
                 </div>
-              ))}
-              <div ref={bottomRef} />
-            </div>
+              </div>
 
-            <div className="chat-input-row">
-              <button 
-                className={`btn-voice ${isListening ? "active" : ""}`} 
-                onClick={toggleListening}
-                title="Use Voice Assistant"
-              >
-                {isListening ? "🛑" : "🎤"}
-              </button>
-              <input
-                value={query}
-                placeholder={isListening ? "Listening..." : "Ask about this patient..."}
-                onChange={e => setQuery(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && !loading && send()}
-              />
-              <button className="btn-primary" onClick={send} disabled={loading}>
-                {loading ? "..." : "Send"}
-              </button>
-            </div>
-          </div>
-
-          {/* Right Side: Reports Panel */}
-          <div 
-            className={`left-panel ${dragOver ? "drag-active" : ""}`}
-            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <h2 style={{ fontSize: 16, margin: 0, display: "flex", alignItems: "center", gap: 8, color: "#a78bfa" }}>
-                📂 Patient Reports
-              </h2>
-              <button 
-                className="btn-primary" 
-                style={{ padding: "6px 12px", fontSize: 12 }}
-                onClick={() => fileInputRef.current.click()}
-                disabled={uploading}
-              >
-                {uploading ? "Uploading..." : "+ Upload Reports"}
-              </button>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: "none" }} 
-                multiple 
-                accept=".pdf" 
-                onChange={onFileChange}
-              />
-            </div>
-
-            <div className="file-list" style={{ flex: 1, overflowY: "auto" }}>
-              {files.length === 0 && !uploading && (
-                <div style={{ textAlign: "center", marginTop: 40, color: "#64748b" }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
-                  <p style={{ fontSize: 13 }}>No reports uploaded yet.</p>
-                  <p style={{ fontSize: 11, marginTop: 4 }}>Drag & drop PDFs here to upload</p>
-                </div>
-              )}
-              {files.map(f => (
-                <div key={f} className="file-item" onClick={() => setSelectedFile(f)} title={f}>
-                  {f.toLowerCase().match(/\.(jpg|jpeg|png)$/) ? "🖼️" : "📄"} {f}
-                </div>
-              ))}
-              {uploading && (
-                <div className="file-item" style={{ opacity: 0.6, fontStyle: "italic" }}>
-                  ⏳ Uploading new files...
-                </div>
-              )}
             </div>
           </div>
         </div>
+
       </div>
 
       {/* File Viewer Modal */}
       {selectedFile && (
-        <div className="modal-overlay" onClick={() => setSelectedFile(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div
+          onClick={() => setSelectedFile(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '40px'
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              width: '100%',
+              height: '100%',
+              maxWidth: '1100px',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <div style={{
+              padding: '12px 20px',
+              background: '#f4f4f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
               <span style={{ fontWeight: 600 }}>{selectedFile}</span>
-              <div style={{ display: "flex", gap: 12 }}>
-                <a 
-                  href={getFileUrl(selectedFile)} 
-                  download 
-                  style={{ color: "#a78bfa", fontSize: 14, textDecoration: "none" }}
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <a
+                  href={getFileUrl(selectedFile)}
+                  download
+                  style={{ color: '#000', fontSize: '14px', textDecoration: 'none' }}
                 >
                   📥 Download
                 </a>
-                <button className="modal-close" onClick={() => setSelectedFile(null)}>&times;</button>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#000',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  &times;
+                </button>
               </div>
             </div>
-            
-            <div style={{ flex: 1, display: "flex", justifyContent: "center", background: "#f8fafc", overflow: "auto" }}>
+
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', background: '#f8fafc', overflow: 'auto' }}>
               {selectedFile.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/) ? (
-                <img 
-                  src={getFileUrl(selectedFile)} 
-                  alt="Report Preview" 
-                  style={{ maxWidth: "100%", height: "auto", objectFit: "contain" }} 
+                <img
+                  src={getFileUrl(selectedFile)}
+                  alt="Report Preview"
+                  style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
                 />
               ) : selectedFile.toLowerCase().endsWith(".pdf") || selectedFile.toLowerCase().endsWith(".txt") ? (
-                <iframe 
-                  src={getFileUrl(selectedFile)} 
-                  className="viewer-iframe"
+                <iframe
+                  src={getFileUrl(selectedFile)}
                   title="File Viewer"
-                  style={{ width: "100%", height: "100%", border: "none" }}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
                 />
               ) : (
-                <div style={{ padding: 40, textAlign: "center", color: "#1e293b" }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
+                <div style={{ padding: '40px', textAlign: 'center', color: '#1e293b' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
                   <h3>Excel / Data File</h3>
                   <p>This file type cannot be previewed directly in the browser.</p>
-                  <a 
-                    href={getFileUrl(selectedFile)} 
-                    download 
-                    className="btn-primary" 
-                    style={{ display: "inline-block", marginTop: 12, textDecoration: "none" }}
+                  <a
+                    href={getFileUrl(selectedFile)}
+                    download
+                    style={{
+                      display: 'inline-block',
+                      marginTop: '12px',
+                      padding: '12px 24px',
+                      background: '#000',
+                      color: '#fff',
+                      borderRadius: '50px',
+                      textDecoration: 'none',
+                      fontSize: '14px',
+                      fontWeight: 600
+                    }}
                   >
                     Download to View
                   </a>
