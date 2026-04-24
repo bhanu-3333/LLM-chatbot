@@ -58,7 +58,7 @@ export default function Chat() {
 
   const getFileUrl = (filename) => {
     const token = localStorage.getItem("token");
-    return `http://127.0.0.1:8000/patients/${patient_id}/files/${filename}?token=${token}`;
+    return `http://127.0.0.1:8080/patients/${patient_id}/files/${filename}?token=${token}`;
   };
 
   const handleFileUpload = async (selectedFiles) => {
