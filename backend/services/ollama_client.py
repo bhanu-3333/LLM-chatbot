@@ -25,22 +25,25 @@ def _dedup_words(text: str) -> str:
     return " ".join(result)
 
 def stream_answer(context: str, question: str):
-    prompt = f"""Extract the exact value from the context. Do not explain or interpret.
+    prompt = f"""You are a medical data extraction tool. Give only the direct answer in 1-2 lines maximum.
 
-Find this exact term in the context: "{question}"
-Copy the line containing that term exactly as it appears.
-If the exact term does not exist in the context, write only: I cannot answer from the provided documents.
+Rules:
+- Find the exact value asked for in the context.
+- Reply with ONLY the value and its unit. Nothing else.
+- No explanations. No interpretations. No extra sentences.
+- If not found, reply: I cannot answer from the provided documents.
 
 Context:
 {context}
 
-Answer:"""
+Question: {question}
+Answer (1-2 lines only):"""
 
     payload = {
         "model": LLM_MODEL,
         "prompt": prompt,
         "stream": True,
-        "options": {"temperature": 0, "num_ctx": 1024, "repeat_penalty": 1.8, "repeat_last_n": 128}
+        "options": {"temperature": 0, "num_ctx": 2048, "repeat_penalty": 1.8, "repeat_last_n": 128, "num_predict": 80}
     }
 
     try:
