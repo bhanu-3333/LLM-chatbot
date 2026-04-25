@@ -54,7 +54,7 @@ export default function Home() {
 
       <div className="page-wrapper">
         <nav className="navbar">
-          <div className="logo">LLM Chatbot</div>
+          <div className="logo">MedIntel AI</div>
 
           <div className="nav-links">
             <a onClick={() => guarded('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
