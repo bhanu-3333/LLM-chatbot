@@ -100,12 +100,11 @@ body {
   opacity: 0.8;
 }
 
-/* Logout variant — inverts dark icon to white on black button */
+/* Logout variant — dark button with white icon (already white, no filter) */
 .logout-btn .btn-enter-icon {
-  width: 20px !important;
-  height: 20px !important;
-  filter: invert(1) !important;
-  margin-right: 10px !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-left: 8px !important;
   display: inline-block !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -176,7 +175,6 @@ body {
   width: 18px;
   height: 18px;
   object-fit: contain;
-  /* Removed invert to ensure icon remains visible */
 }
 
 /* Hero Visuals - Static & Non-overlapping Composition */
