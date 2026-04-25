@@ -88,15 +88,15 @@ export default function AuthPage() {
             <div className="auth-hero-content">
               <h1>
                 {isRegister ? (
-                  <>Join the<br /><em>Future</em> of<br />Clinical AI.</>
+                  <>From Data to<br /><em>Decisions.</em><br />Effortlessly.</>
                 ) : (
-                  <>Smarter Medical<br /><em>Insights,</em><br />Instantly.</>
+                  <>Access Smarter<br /><em>Medical</em><br />Insights.</>
                 )}
               </h1>
               <p>
                 {isRegister
-                  ? "Create your doctor account and start querying patient reports using natural language — fully offline, privacy-preserving AI."
-                  : "Query patient reports using natural language. Fully offline, privacy-preserving AI for clinical decision support — built on patient goals, lifestyle, and comfort."}
+                  ? "Join a system that helps you ask, understand, and act on patient reports in seconds."
+                  : "Log in to securely explore patient data and get instant answers."}
               </p>
             </div>
 
