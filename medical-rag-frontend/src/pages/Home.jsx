@@ -71,6 +71,7 @@ export default function Home() {
           ) : (
             <button className="login-btn-nav" onClick={() => navigate('/login')}>
               Login
+              <img src={enterIcon} alt="Enter" className="btn-enter-icon" />
             </button>
           )}
         </nav>
@@ -85,6 +86,7 @@ Offline AI built for safe and smarter decisions.
               </p>
               <button className="cta-button" onClick={() => navigate('/login')}>
                 Login to Continue
+                <img src={enterIcon} alt="Enter" className="btn-enter-icon" />
               </button>
             </div>
 
