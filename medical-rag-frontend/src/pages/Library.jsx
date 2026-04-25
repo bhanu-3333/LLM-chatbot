@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
 import "../styles/Home.css";
+import "../styles/About.css";
 import searchIcon from "../assets/search.png";
 import logoutIcon from "../assets/logout.png";
 
@@ -41,11 +42,12 @@ export default function Library() {
           <div className="logo">LLM Chatbot</div>
           <div className="nav-links">
             <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
-            <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
-            <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/upload')}    className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => nav('/library')}   className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
-          <button className="login-btn-nav" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" style={{ width: '16px', height: '16px', marginRight: '6px' }} />
+          <button className="login-btn-nav logout-btn" onClick={logout}>
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', filter: 'invert(1)', marginRight: '8px' }} />
             Logout
           </button>
         </nav>
@@ -131,7 +133,6 @@ export default function Library() {
                   padding: '80px 20px',
                   color: '#888'
                 }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
                   <p style={{ fontSize: '15px' }}>No patients found. Upload a record to get started.</p>
                 </div>
               )}
@@ -219,9 +220,6 @@ export default function Library() {
                       alignItems: 'center',
                       marginTop: '4px'
                     }}>
-                      <span style={{ fontSize: '12px', color: '#888' }}>
-                        📄 {p.file_count} file{p.file_count !== 1 ? 's' : ''}
-                      </span>
                       <button
                         onClick={() => nav(`/chat/${p.patient_id}`)}
                         style={{
@@ -237,6 +235,9 @@ export default function Library() {
                       >
                         View Records →
                       </button>
+                      <span style={{ fontSize: '12px', color: '#888' }}>
+                        {p.file_count} file{p.file_count !== 1 ? 's' : ''}
+                      </span>
                     </div>
                   </div>
                 ))}
