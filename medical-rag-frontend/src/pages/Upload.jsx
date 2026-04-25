@@ -133,7 +133,7 @@ export default function Upload() {
             <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
           <button className="login-btn-nav logout-btn" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" />
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', filter: 'invert(1)', marginRight: '8px' }} />
             Logout
           </button>
         </nav>
