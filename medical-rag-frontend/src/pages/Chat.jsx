@@ -9,6 +9,7 @@ import chatIcon from "../assets/chat.png";
 import imageIcon from "../assets/image.png";
 import fileIcon from "../assets/open-folder.png";
 import docIcon from "../assets/file.png";
+import sendIcon from "../assets/send.png";
 
 export default function Chat() {
   const { patient_id } = useParams();
@@ -253,8 +254,8 @@ export default function Chat() {
             <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
           <button className="login-btn-nav logout-btn" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', filter: 'invert(1)', marginRight: '8px' }} />
             Logout
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', marginLeft: '8px' }} />
           </button>
         </nav>
 
@@ -391,10 +392,18 @@ export default function Chat() {
                       fontSize: '14px',
                       fontWeight: 600,
                       cursor: loading ? 'not-allowed' : 'pointer',
-                      opacity: loading ? 0.5 : 1
+                      opacity: loading ? 0.5 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}
                   >
-                    {loading ? "..." : "Send"}
+                    {loading ? "..." : (
+                      <>
+                        <img src={sendIcon} alt="Send" style={{ width: '18px', height: '18px', filter: 'brightness(0) invert(1)' }} />
+                        Send
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -503,7 +512,7 @@ export default function Chat() {
                   ))}
                   {uploading && (
                     <div style={{ padding: '10px 12px', opacity: 0.6, fontStyle: 'italic', fontSize: '12px' }}>
-                      ⏳ Uploading...
+                      Uploading...
                     </div>
                   )}
                 </div>
@@ -593,7 +602,6 @@ export default function Chat() {
                 />
               ) : (
                 <div style={{ padding: '40px', textAlign: 'center', color: '#1e293b' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
                   <h3>Excel / Data File</h3>
                   <p>This file type cannot be previewed directly in the browser.</p>
                   <a
