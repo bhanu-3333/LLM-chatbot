@@ -22,7 +22,7 @@ export default function About() {
         {/* ── Navbar ── */}
         <nav className="navbar">
           <div className="logo" onClick={() => nav('/')} style={{ cursor: 'pointer' }}>
-            LLM Chatbot
+            MedIntel AI
           </div>
           <div className="nav-links">
             {isLoggedIn() ? (
