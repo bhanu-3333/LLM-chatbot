@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
 import "./AuthPage.css";
+import cancelIcon from "../assets/cancel.png";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login"); // "login" | "register"
@@ -101,6 +102,10 @@ export default function AuthPage() {
 
             {/* RIGHT: auth card */}
             <div className="auth-form-wrapper">
+              {/* Close button */}
+              <button className="auth-close-btn" onClick={() => nav("/")} title="Go Home">
+                <img src={cancelIcon} alt="Close" />
+              </button>
 
               {/* Tab switcher */}
               <div className="auth-tabs">
