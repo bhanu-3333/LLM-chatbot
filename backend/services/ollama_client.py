@@ -11,9 +11,9 @@ _NOT_FOUND_SIGNALS = [
     "cannot answer from the provided documents",
     "not found in the provided",
     "not present in the provided",
-    "not available in the provided",
+    "not available in the provided documents",
+    "information is not available",
     "not found.",
-    "not found\n",
 ]
 
 def _dedup_words(text: str) -> str:
@@ -73,9 +73,13 @@ def stream_answer(context: str, question: str):
 ---
 {context}
 ---
-From the data above, extract only the numeric result for: {question}
-Respond with one line only. Example format: "PROTHROMBIN TIME: 11.1 Seconds"
-If not found, say: Not found."""
+Answer this question using ONLY the data above: {question}
+
+Rules:
+- If the answer is clearly present in the data, state it directly in 1-2 lines.
+- If the data does not contain enough information to answer, reply ONLY with: "This information is not available in the provided documents."
+- Do NOT explain, reason, or add anything beyond what the data says.
+Answer:"""
 
     payload = {
         "model": LLM_MODEL,
