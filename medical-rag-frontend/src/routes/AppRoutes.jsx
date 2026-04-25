@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Login from "../pages/Login";
+import AuthPage from "../pages/AuthPage";
 import Home from "../pages/Home";
+import About from "../pages/About";
 
-import RegisterDoctor from "../pages/RegisterDoctor";
 import Dashboard from "../pages/Dashboard";
 import Upload from "../pages/Upload";
 import Library from "../pages/Library";
@@ -14,9 +14,9 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/register-doctor" element={<RegisterDoctor />} />
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/register-doctor" element={<AuthPage />} />
+        <Route path="/about" element={<About />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/library" element={<Library />} />
