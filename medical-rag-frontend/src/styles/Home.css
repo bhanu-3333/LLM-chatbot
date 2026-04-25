@@ -100,6 +100,18 @@ body {
   opacity: 0.8;
 }
 
+/* Logout variant — inverts dark icon to white on black button */
+.logout-btn .btn-enter-icon {
+  width: 20px !important;
+  height: 20px !important;
+  filter: invert(1) !important;
+  margin-right: 10px !important;
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+
 /* Hero Container */
 .hero-container {
   background-color: var(--primary-yellow);
@@ -284,4 +296,41 @@ body {
   .hero-visuals {
     display: none;
   }
+}
+
+/* ── Login-required toast ── */
+.home-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 13px 28px;
+  border-radius: 50px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+  z-index: 9999;
+  white-space: nowrap;
+  animation: toast-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.home-toast span {
+  color: #f8f59d;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin: 0 2px;
+}
+
+.home-toast span:hover {
+  opacity: 0.8;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
