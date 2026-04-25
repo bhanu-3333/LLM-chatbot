@@ -50,6 +50,7 @@ export default function About() {
           ) : (
             <button className="login-btn-nav" onClick={() => nav('/login')}>
               Login
+              <img src={enterIcon} alt="Enter" className="btn-enter-icon" />
             </button>
           )}
         </nav>
