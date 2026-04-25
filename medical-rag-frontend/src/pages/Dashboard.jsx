@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "../styles/Home.css";
+import "../styles/About.css";
 import img1 from '../assets/img1.jpg';
 import img2 from '../assets/img2.jpeg';
 import img3 from '../assets/img3.jpeg';
@@ -7,7 +8,7 @@ import img4 from '../assets/img4.jpeg';
 import logoutIcon from '../assets/logout.png';
 import uploadIcon from '../assets/upload.png';
 import recordsIcon from '../assets/records.png';
-import logoutIcon from '../assets/logout.png';
+
 
 export default function Dashboard() {
   const nav = useNavigate();
@@ -39,11 +40,12 @@ export default function Dashboard() {
           <div className="logo">LLM Chatbot</div>
           <div className="nav-links">
             <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
-            <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
-            <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/upload')}    className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => nav('/library')}   className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
-          <button className="login-btn-nav" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" style={{ width: '16px', height: '16px', marginRight: '6px' }} />
+          <button className="login-btn-nav logout-btn" onClick={logout}>
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" />
             Logout
           </button>
         </nav>
@@ -57,7 +59,7 @@ export default function Dashboard() {
               <h1>Welcome,<br/><em>Dr. {name}</em></h1>
               <p>
                 Query patient reports using natural language. Fully offline, 
-                privacy-preserving AI for clinical decision support — built on patient goals, 
+                privacy-preserving AI for clinical decision support. built on patient goals, 
                 lifestyle, and comfort.
               </p>
               
