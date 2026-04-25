@@ -65,13 +65,12 @@ export default function Home() {
 
           {isLoggedIn() ? (
             <button className="login-btn-nav logout-btn" onClick={logout}>
-              <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', filter: 'invert(1)', marginRight: '8px' }} />
               Logout
+              <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', marginLeft: '8px' }} />
             </button>
           ) : (
             <button className="login-btn-nav" onClick={() => navigate('/login')}>
               Login
-              <img src={enterIcon} alt="Enter" className="btn-enter-icon" />
             </button>
           )}
         </nav>
@@ -79,15 +78,13 @@ export default function Home() {
         <div className="hero-container">
           <div className="hero-layout">
             <div className="hero-content">
-              <h1>Smarter Medical<br/>Insights, Instantly.</h1>
+              <h1>From Reports to Answers, Instantly.</h1>
               <p>
-                Query patient reports using natural language. Fully offline,
-                privacy-preserving AI for clinical decision support. built on patient goals,
-                lifestyle, and comfort.
+               Understand patient data in seconds, not minutes.
+Offline AI built for safe and smarter decisions.
               </p>
               <button className="cta-button" onClick={() => navigate('/login')}>
                 Login to Continue
-                <img src={enterIcon} alt="Enter" className="btn-enter-icon" />
               </button>
             </div>
 
