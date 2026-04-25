@@ -47,7 +47,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px 0 20px; /* Removed bottom padding entirely */
-  background: transparent;
+  background: white;
   flex-shrink: 0;
   border: none !important;
 }
