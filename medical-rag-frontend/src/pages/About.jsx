@@ -43,10 +43,10 @@ export default function About() {
             )}
           </div>
           {isLoggedIn() ? (
-            <button className="login-btn-nav logout-btn" onClick={logout}>
-              <img src={logoutIcon} alt="Logout" className="btn-enter-icon" />
-              Logout
-            </button>
+          <button className="login-btn-nav logout-btn" onClick={logout}>
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', filter: 'invert(1)', marginRight: '8px' }} />
+            Logout
+          </button>
           ) : (
             <button className="login-btn-nav" onClick={() => nav('/login')}>
               Login
