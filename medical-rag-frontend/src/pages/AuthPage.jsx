@@ -69,13 +69,13 @@ export default function AuthPage() {
         {/* ── Navbar ── */}
         <nav className="auth-navbar">
           <div className="auth-logo" onClick={() => nav("/")} style={{ cursor: "pointer" }}>
-            LLM Chatbot
+            MedIntel AI
           </div>
           <div className="auth-nav-links">
-            <a href="#" className="auth-nav-item">Product</a>
-            <a href="#" className="auth-nav-item">Service</a>
-            <a href="#" className="auth-nav-item">Features</a>
-            <a href="#" className="auth-nav-item">Contact</a>
+            <a onClick={() => nav('/')}          className="auth-nav-item" style={{ cursor: 'pointer' }}>Home</a>
+            <a onClick={() => nav('/upload')}    className="auth-nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => nav('/library')}   className="auth-nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/about')}     className="auth-nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
           <div style={{ width: 120 }} /> {/* balance spacer */}
         </nav>
