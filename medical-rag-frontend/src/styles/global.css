@@ -11,9 +11,9 @@
   gap: 12px;
   align-items: center;
   padding: 14px 24px;
-  background: #1a1d27;
-  border-bottom: 1px solid #2d3148;
-  margin-bottom: 32px;
+  background: #ffffff;
+  border-bottom: 1px solid #eeeeee;
+  margin-bottom: 0px;
 }
 
 .navbar span {
