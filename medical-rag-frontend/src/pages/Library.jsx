@@ -5,6 +5,7 @@ import "../styles/Home.css";
 import "../styles/About.css";
 import searchIcon from "../assets/search.png";
 import logoutIcon from "../assets/logout.png";
+import chatIcon from "../assets/chat.png";
 
 export default function Library() {
   const nav = useNavigate();
@@ -47,8 +48,8 @@ export default function Library() {
             <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
           <button className="login-btn-nav logout-btn" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', filter: 'invert(1)', marginRight: '8px' }} />
             Logout
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', marginLeft: '8px' }} />
           </button>
         </nav>
 
@@ -230,9 +231,13 @@ export default function Library() {
                           fontWeight: 600,
                           cursor: 'pointer',
                           textDecoration: 'underline',
-                          padding: 0
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
                         }}
                       >
+                        <img src={chatIcon} alt="Chat" style={{ width: '14px', height: '14px' }} />
                         View Records →
                       </button>
                       <span style={{ fontSize: '12px', color: '#888' }}>
