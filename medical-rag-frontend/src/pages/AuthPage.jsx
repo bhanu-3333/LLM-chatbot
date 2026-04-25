@@ -21,6 +21,18 @@ export default function AuthPage() {
   const [regLoading, setRegLoading] = useState(false);
 
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const [toast, setToast] = useState(false);
+
+  const isLoggedIn = () => !!localStorage.getItem('token');
+
+  const guarded = (path) => {
+    if (isLoggedIn()) {
+      nav(path);
+    } else {
+      setToast(true);
+      setTimeout(() => setToast(false), 3000);
+    }
+  };
 
   /* ── Handlers ── */
   const handleLogin = async () => {
@@ -64,6 +76,26 @@ export default function AuthPage() {
 
   return (
     <div className="auth-root">
+      {/* ── Login toast ── */}
+      {toast && (
+        <div className="home-toast" style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#000',
+          color: '#fff',
+          padding: '12px 24px',
+          borderRadius: '50px',
+          zIndex: 10000,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          fontSize: '14px',
+          fontWeight: 600,
+          animation: 'toastIn 0.3s ease forwards'
+        }}>
+          🔒 Please log in to access this feature.
+        </div>
+      )}
       <div className="auth-page-wrapper">
 
         {/* ── Navbar ── */}
@@ -73,8 +105,8 @@ export default function AuthPage() {
           </div>
           <div className="auth-nav-links">
             <a onClick={() => nav('/')}          className="auth-nav-item" style={{ cursor: 'pointer' }}>Home</a>
-            <a onClick={() => nav('/upload')}    className="auth-nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
-            <a onClick={() => nav('/library')}   className="auth-nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => guarded('/upload')}    className="auth-nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => guarded('/library')}   className="auth-nav-item" style={{ cursor: 'pointer' }}>Library</a>
             <a onClick={() => nav('/about')}     className="auth-nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
           <div style={{ width: 120 }} /> {/* balance spacer */}
