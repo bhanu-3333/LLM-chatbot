@@ -246,7 +246,7 @@ export default function Chat() {
 
         {/* Navbar */}
         <nav className="navbar">
-          <div className="logo">LLM Chatbot</div>
+          <div className="logo">MedIntel AI</div>
           <div className="nav-links">
             <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
             <a onClick={() => nav('/upload')}    className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
