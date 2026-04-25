@@ -476,3 +476,8 @@
   .auth-tab    { flex: 1; text-align: center; }
   .auth-navbar .auth-nav-links { display: none; }
 }
+
+@keyframes toastIn {
+  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
