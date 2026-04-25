@@ -167,7 +167,7 @@ export default function AuthPage() {
                       onClick={handleLogin}
                       disabled={loginLoading}
                     >
-                      {loginLoading ? "Signing in…" : "Sign In →"}
+                      {loginLoading ? "Signing in…" : "Sign In"}
                     </button>
 
                     <p className="auth-switch-hint">
@@ -234,7 +234,7 @@ export default function AuthPage() {
                       onClick={handleRegister}
                       disabled={regLoading}
                     >
-                      {regLoading ? "Creating account…" : "Create Account →"}
+                      {regLoading ? "Creating account…" : "Create Account"}
                     </button>
 
                     <p className="auth-switch-hint">
