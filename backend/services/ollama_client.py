@@ -106,18 +106,18 @@ Answer:"""
         # Dedup on the complete text — catches every-other-word repetition pattern
         clean_response = _dedup_words(full_response.strip())
 
-        # Fix missing spaces from poor OCR (e.g. "Timeof" → "Time of", "11.1seconds" → "11.1 seconds")
+        # Fix missing spaces from poor OCR or model output
         clean_response = re.sub(r'([a-z])([A-Z])', r'\1 \2', clean_response)
         clean_response = re.sub(r'(\d)([A-Za-z])', r'\1 \2', clean_response)
         clean_response = re.sub(r'([A-Za-z])(\d)', r'\1 \2', clean_response)
+        # Fix words run together (e.g. "notavailable" → "not available") — only for known stopwords
+        import re as _re
+        clean_response = _re.sub(r'\b(not)(available|found|present|provided|mentioned|stated|given|included|specified)\b', r'\1 \2', clean_response, flags=_re.IGNORECASE)
 
         print(f"[ollama] Clean response: {repr(clean_response[:200])}")
 
-        # Stream word by word so frontend still gets streaming effect
-        words = clean_response.split(" ")
-        for i, word in enumerate(words):
-            chunk = word + (" " if i < len(words) - 1 else "")
-            yield json.dumps({"chunk": chunk}) + "\n"
+        # Send as single chunk — avoids word boundary issues from token streaming
+        yield json.dumps({"chunk": clean_response}) + "\n"
 
     except Exception as e:
         yield json.dumps({"chunk": f"\nError: {str(e)}"}) + "\n"
