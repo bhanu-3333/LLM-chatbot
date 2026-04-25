@@ -2,16 +2,20 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
 import "../styles/Home.css";
+import "../styles/About.css";
 import logoutIcon from "../assets/logout.png";
+import fileIcon from "../assets/open-folder.png";
+import imageIcon from "../assets/image.png";
+import docIcon from "../assets/file.png";
 
 const ACCEPTED_TYPES = {
-  "application/pdf": { label: "PDF", icon: "📄", color: "#e74c3c" },
-  "image/jpeg": { label: "JPEG", icon: "🖼️", color: "#9b59b6" },
-  "image/png": { label: "PNG", icon: "🖼️", color: "#9b59b6" },
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { label: "Excel", icon: "📊", color: "#27ae60" },
-  "application/vnd.ms-excel": { label: "Excel", icon: "📊", color: "#27ae60" },
-  "text/plain": { label: "TXT", icon: "📝", color: "#2980b9" },
-  "text/csv": { label: "CSV", icon: "📝", color: "#2980b9" },
+  "application/pdf": { label: "PDF", icon: docIcon, color: "#e74c3c" },
+  "image/jpeg": { label: "JPEG", icon: imageIcon, color: "#9b59b6" },
+  "image/png": { label: "PNG", icon: imageIcon, color: "#9b59b6" },
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { label: "Excel", icon: docIcon, color: "#27ae60" },
+  "application/vnd.ms-excel": { label: "Excel", icon: docIcon, color: "#27ae60" },
+  "text/plain": { label: "TXT", icon: docIcon, color: "#2980b9" },
+  "text/csv": { label: "CSV", icon: docIcon, color: "#2980b9" },
 };
 
 const ACCEPT_STRING = ".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.txt,.csv";
@@ -19,7 +23,7 @@ const ACCEPT_STRING = ".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.txt,.csv";
 function getFileInfo(file) {
   if (!file) return null;
   const mime = file.type;
-  return ACCEPTED_TYPES[mime] || { label: file.name.split(".").pop().toUpperCase(), icon: "📁", color: "#7f8c8d" };
+  return ACCEPTED_TYPES[mime] || { label: file.name.split(".").pop().toUpperCase(), icon: docIcon, color: "#7f8c8d" };
 }
 
 function formatBytes(bytes) {
@@ -57,7 +61,7 @@ export default function Upload() {
       if (allowed.includes(ext)) {
         valid.push(f);
       } else {
-        errorMsg = `❌ Unsupported file type ".${ext}" ignored.`;
+        errorMsg = `Unsupported file type ".${ext}" ignored.`;
       }
     });
 
@@ -101,7 +105,7 @@ export default function Upload() {
 
       const successCount = d.results.filter(r => r.status === "success").length;
       setMsg(
-        `✅ ${d.message} — Patient ID: ${d.patient_id} · ` +
+        `${d.message} — Patient ID: ${d.patient_id} · ` +
         `${successCount} files indexed · ${d.total_chunks} chunks created`
       );
       setName("");
@@ -124,11 +128,12 @@ export default function Upload() {
           <div className="logo">LLM Chatbot</div>
           <div className="nav-links">
             <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
-            <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
-            <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/upload')}    className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => nav('/library')}   className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
-          <button className="login-btn-nav" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" style={{ width: '16px', height: '16px', marginRight: '6px' }} />
+          <button className="login-btn-nav logout-btn" onClick={logout}>
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" />
             Logout
           </button>
         </nav>
@@ -288,7 +293,7 @@ export default function Upload() {
                         borderRadius: '10px',
                         border: '1px solid #e0e0d8'
                       }}>
-                        <span style={{ fontSize: '22px' }}>{info.icon}</span>
+                        <img src={info.icon} alt="icon" style={{ width: '22px', height: '22px' }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
                             fontSize: '13px',
@@ -347,7 +352,7 @@ export default function Upload() {
               }}
             >
               {loading ? (
-                "⏳ Uploading & Indexing..."
+                "Uploading & Indexing..."
               ) : (
                 <>
                   <svg
