@@ -73,8 +73,8 @@ export default function About() {
 
 
 
-            <p className="about-body">
-              Our system is designed to simplify this. A doctor can upload a patient's report  whether
+            <p className="about-body" style={{ marginTop: '44px' }}>
+              Our system is designed to simplify this. A doctor can upload a patient's report whether
               it's a lab report, discharge summary, or clinical document and interact with it through a
               simple chat interface. Instead of reading the entire document, the doctor can ask questions
               like <em>"What is the CRP level?"</em>, <em>"Does the patient have any previous conditions?"</em>,
