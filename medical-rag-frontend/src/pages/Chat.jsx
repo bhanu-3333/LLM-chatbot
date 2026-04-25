@@ -8,6 +8,7 @@ import uploadIcon from "../assets/upload.png";
 import chatIcon from "../assets/chat.png";
 import imageIcon from "../assets/image.png";
 import fileIcon from "../assets/open-folder.png";
+import docIcon from "../assets/file.png";
 
 export default function Chat() {
   const { patient_id } = useParams();
@@ -247,11 +248,12 @@ export default function Chat() {
           <div className="logo">LLM Chatbot</div>
           <div className="nav-links">
             <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
-            <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
-            <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/upload')}    className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => nav('/library')}   className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
-          <button className="login-btn-nav" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" style={{ width: '16px', height: '16px', marginRight: '6px' }} />
+          <button className="login-btn-nav logout-btn" onClick={logout}>
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" />
             Logout
           </button>
         </nav>
@@ -414,7 +416,10 @@ export default function Chat() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>📂 Patient Records</h3>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={fileIcon} alt="Folder" style={{ width: '20px', height: '20px' }} />
+                    Patient Records
+                  </h3>
                   <button
                     onClick={() => fileInputRef.current.click()}
                     disabled={uploading}
@@ -457,9 +462,9 @@ export default function Chat() {
                 <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
                   {files.length === 0 && !uploading && (
                     <div style={{ textAlign: 'center', marginTop: '60px', color: '#888' }}>
-                      <div style={{ fontSize: '36px', marginBottom: '8px' }}>📄</div>
+                      <img src={fileIcon} alt="No files" style={{ width: '48px', height: '48px', marginBottom: '8px', opacity: 0.4 }} />
                       <p style={{ fontSize: '12px' }}>No reports yet.</p>
-                      <p style={{ fontSize: '11px', marginTop: '4px' }}>Drag & drop PDFs here</p>
+                      <p style={{ fontSize: '11px', marginTop: '4px' }}>Drag & drop files here</p>
                     </div>
                   )}
                   {files.map(f => (
@@ -489,7 +494,11 @@ export default function Chat() {
                       }}
                       title={f}
                     >
-                      {f.toLowerCase().match(/\.(jpg|jpeg|png)$/) ? "🖼️" : "📄"} {f}
+                      <img
+                        src={f.toLowerCase().match(/\.(jpg|jpeg|png)$/) ? imageIcon : docIcon}
+                        alt="file"
+                        style={{ width: '14px', height: '14px', marginRight: '6px', verticalAlign: 'middle', flexShrink: 0 }}
+                      />{f}
                     </div>
                   ))}
                   {uploading && (
