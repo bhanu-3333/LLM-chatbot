@@ -45,8 +45,8 @@ export default function Dashboard() {
             <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
           <button className="login-btn-nav logout-btn" onClick={logout}>
-            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', filter: 'invert(1)', marginRight: '8px' }} />
             Logout
+            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', marginLeft: '8px' }} />
           </button>
         </nav>
 
@@ -58,9 +58,8 @@ export default function Dashboard() {
             <div className="hero-content">
               <h1>Welcome,<br/><em>Dr. {name}</em></h1>
               <p>
-                Query patient reports using natural language. Fully offline, 
-                privacy-preserving AI for clinical decision support. built on patient goals, 
-                lifestyle, and comfort.
+             Understand patient data in seconds, not minutes.
+Offline AI built for safe and smarter decisions.
               </p>
               
               {/* Action buttons */}
