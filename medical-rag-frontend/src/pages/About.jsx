@@ -28,9 +28,9 @@ export default function About() {
             {isLoggedIn() ? (
               <>
                 <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
-                <a onClick={() => nav('/upload')}    className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
-                <a onClick={() => nav('/library')}   className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
-                <a onClick={() => nav('/about')}     className="nav-item" style={{ cursor: 'pointer' }}>About</a>
+                <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+                <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+                <a onClick={() => nav('/about')} className="nav-item" style={{ cursor: 'pointer' }}>About</a>
               </>
             ) : (
               <>
@@ -43,10 +43,10 @@ export default function About() {
             )}
           </div>
           {isLoggedIn() ? (
-          <button className="login-btn-nav logout-btn" onClick={logout}>
-            Logout
-            <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', marginLeft: '8px' }} />
-          </button>
+            <button className="login-btn-nav logout-btn" onClick={logout}>
+              Logout
+              <img src={logoutIcon} alt="Logout" className="btn-enter-icon" style={{ width: '18px', height: '18px', marginLeft: '8px' }} />
+            </button>
           ) : (
             <button className="login-btn-nav" onClick={() => nav('/login')}>
               Login
@@ -68,19 +68,17 @@ export default function About() {
             <p className="about-lead">
               In today's busy hospital environment, doctors often have to go through multiple patient
               reports, lab results, and clinical notes to find important information. This process takes
-              time and can delay quick decision-making, especially in critical situations.
+              time and can delay quick decision making, especially in critical situations.
             </p>
 
-            <div className="about-divider" />
+
 
             <p className="about-body">
-              Our system is designed to simplify this. A doctor can upload a patient's report — whether
-              it's a lab report, discharge summary, or clinical document — and interact with it through a
+              Our system is designed to simplify this. A doctor can upload a patient's report  whether
+              it's a lab report, discharge summary, or clinical document and interact with it through a
               simple chat interface. Instead of reading the entire document, the doctor can ask questions
-              like <span className="about-quote">"What is the CRP level?"</span>,{' '}
-              <span className="about-quote">"Does the patient have any previous conditions?"</span>, or{' '}
-              <span className="about-quote">"What treatment was given?"</span> and instantly receive
-              clear, accurate answers.
+              like <em>"What is the CRP level?"</em>, <em>"Does the patient have any previous conditions?"</em>,
+              or <em>"What treatment was given?"</em> and instantly receive clear, accurate answers.
             </p>
 
             <p className="about-body">
@@ -95,7 +93,7 @@ export default function About() {
               compliance with data protection requirements.
             </p>
 
-            <div className="about-divider" />
+
 
             <p className="about-goal">
               Our goal is to reduce the time doctors spend searching for information, support faster
@@ -112,10 +110,10 @@ export default function About() {
       <div className="scroller-wrapper">
         <div className="scroller-track">
           {[
-            'Discharge Summaries','Lab Reports','Clinical Notes',
-            'Treatment Protocols','ICU Notes','Radiology Reports',
-            'Discharge Summaries','Lab Reports','Clinical Notes',
-            'Treatment Protocols','ICU Notes','Radiology Reports',
+            'Discharge Summaries', 'Lab Reports', 'Clinical Notes',
+            'Treatment Protocols', 'ICU Notes', 'Radiology Reports',
+            'Discharge Summaries', 'Lab Reports', 'Clinical Notes',
+            'Treatment Protocols', 'ICU Notes', 'Radiology Reports',
           ].map((item, i) => (
             <div key={i} className="scroller-item">
               {item}<span className="star-sep">★</span>
