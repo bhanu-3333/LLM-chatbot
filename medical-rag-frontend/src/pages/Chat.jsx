@@ -199,6 +199,9 @@ export default function Chat() {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
 
+  const inputRef = useRef(null);
+  const [voiceHint, setVoiceHint] = useState(false);
+
   const toggleListening = () => {
     if (isListening && recognitionRef.current) {
       recognitionRef.current.stop();
@@ -207,7 +210,9 @@ export default function Chat() {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Voice recognition is not supported in this browser.");
+      inputRef.current?.focus();
+      setVoiceHint(true);
+      setTimeout(() => setVoiceHint(false), 5000);
       return;
     }
 
@@ -230,10 +235,15 @@ export default function Chat() {
       if (finalTranscript) setQuery(finalTranscript);
     };
     recognition.onerror = (event) => {
-      if (event.error !== "aborted") {
+      if (event.error === "network") {
+        setIsListening(false);
+        inputRef.current?.focus();
+        setVoiceHint(true);
+        setTimeout(() => setVoiceHint(false), 5000);
+      } else if (event.error !== "aborted") {
         console.error("Speech recognition error:", event.error);
+        setIsListening(false);
       }
-      setIsListening(false);
     };
     recognition.onend = () => setIsListening(false);
 
@@ -364,20 +374,22 @@ export default function Chat() {
                     />
                   </button>
                   <input
+                    ref={inputRef}
                     value={query}
-                    placeholder={isListening ? "Listening..." : "Ask about this patient..."}
+                    placeholder={isListening ? "Listening..." : voiceHint ? "Press Win + H to speak..." : "Ask about this patient..."}
                     onChange={e => setQuery(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && !loading && send()}
                     style={{
                       flex: 1,
                       padding: '12px 16px',
-                      border: '1.5px solid #e0e0d8',
+                      border: voiceHint ? '1.5px solid #f59e0b' : '1.5px solid #e0e0d8',
                       borderRadius: '50px',
                       fontFamily: 'Inter, sans-serif',
                       fontSize: '14px',
                       color: '#1a1a1a',
-                      background: '#fafaf8',
-                      outline: 'none'
+                      background: voiceHint ? '#fffbeb' : '#fafaf8',
+                      outline: 'none',
+                      transition: 'all 0.3s'
                     }}
                   />
                   <button
