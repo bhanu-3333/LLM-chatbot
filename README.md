@@ -1,5 +1,6 @@
-# Offline Medical RAG System
+# MedIntel AI — Offline Medical RAG System
 
+<<<<<<< HEAD
 <div align="center">
   <video src="./medical-rag-frontend/src/assets/demo.mp4" width="800" controls>
     Your browser does not support the video tag.
@@ -7,86 +8,119 @@
 </div>
 ## Overview
 This repository contains an offline-first Retrieval-Augmented Generation (RAG) system designed specifically for the medical sector. The application provides medical professionals with a secure, local environment to upload patient documents, parse unstructured medical data, and query a local Large Language Model (LLM) for clinical insights and historical summarization. 
+=======
+## The Problem
+>>>>>>> 45f4ec01b096d93c0bd46d6a4335feee98355fcc
 
-By operating entirely without internet connectivity for inference and embedding, the system guarantees zero data exfiltration, ensuring strict adherence to data privacy regulations such as HIPAA regarding Protected Health Information (PHI).
+Doctors deal with hundreds of patient records every day, but most of that information is buried inside long, unstructured documents — lab reports, discharge summaries, clinical notes. Finding something as simple as a lab value or a medication history means manually flipping through files or using basic keyword search that doesn't understand medical language.
 
-## System Capabilities
-- **Air-Gapped Processing:** Utilizes local embedding models and LLMs to ensure that sensitive medical data never leaves the host machine.
-- **Patient-Centric Context:** Implements isolated vector spaces for individual patients, allowing multi-document contextual memory per patient record.
-- **Information Retrieval:** Built on a RAG architecture using LangChain to retrieve and inject relevant clinical context before LLM generation.
-- **Role-Based Access:** Secures endpoint access via JWT-based authentication for registered clinical personnel.
+That search takes minutes. Minutes that matter in a clinical setting.
 
-## System Architecture
+On top of that, patient data can't be sent to cloud-based AI tools because of privacy regulations. So doctors are stuck — too much data, no intelligent way to access it quickly, and no safe way to use modern AI.
 
-### Frontend Layer
-- **Framework:** React
-- **Build Tool:** Vite
-- **Routing:** React Router
-- **Styling:** Custom CSS (No external UI libraries)
+## The Solution
 
-### Backend Layer
-- **Framework:** FastAPI (Python)
-- **Database:** SQLite with SQLAlchemy ORM (relational metadata mapping)
-- **RAG Pipeline:** LangChain
-- **Embeddings:** HuggingFace `all-MiniLM-L6-v2` (configured for strict offline execution)
+MedIntel AI is a fully offline AI assistant built for hospitals. Doctors upload patient documents once, and from that point they can just ask questions in plain English — "What is the CRP level?", "What medications is this patient on?", "Does this patient have a history of diabetes?" — and get answers pulled directly from the actual documents, with the source cited.
 
-### Inference Engine
-- **Platform:** Ollama
-- **Supported Models:** Mistral, Llama 3, Phi-3 (configurable via backend settings)
+No internet. No data leaving the hospital. No hallucinated answers.
 
-## Developer Setup Instructions
+Each doctor has their own patient records. Each patient has their own isolated AI context. The system only answers from what's in the documents — if the information isn't there, it says so.
 
-### System Requirements
-- Python 3.9+
+---
+
+A local AI system that lets doctors upload patient reports and ask questions about them in plain English. Everything runs on your machine — no internet needed, no data leaves the hospital.
+
+---
+
+## What it does
+
+Doctors log in, upload patient documents (PDFs, scanned images, lab reports), and then chat with an AI that answers questions based only on those documents. Each patient has their own isolated index, so there's no mixing of data between patients or doctors.
+
+If the answer isn't in the documents, it says so. It doesn't guess.
+
+---
+
+## Stack
+
+**Backend** — FastAPI + Python 3.10, SQLite, SQLAlchemy, LangChain  
+**Frontend** — React 18, Vite, React Router  
+**Embeddings** — `all-MiniLM-L6-v2` (HuggingFace, runs fully offline)  
+**Vector DB** — FAISS  
+**LLM** — Mistral 7B via Ollama (local, no API calls)  
+**OCR** — Tesseract (for scanned/image-based reports)  
+**Auth** — JWT tokens, bcrypt password hashing
+
+---
+
+## Setup
+
+### Requirements
+- Python 3.10
 - Node.js 18+
-- Ollama installed locally
+- Ollama installed — https://ollama.com
 
-### 1. Initialize the Inference Engine
-The system requires a localized AI model. Open a terminal and pull the default model prior to running the application:
+### 1. Pull the model
 ```bash
 ollama pull mistral
 ```
 
-### 2. Backend Environment Configuration
-Navigate to the backend directory and establish a virtual environment:
+### 2. Backend
 ```bash
 cd backend
 python -m venv venv
-```
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Mac/Linux
 
-Activate the environment:
-- **Windows:** `venv\Scripts\activate`
-- **Unix/macOS:** `source venv/bin/activate`
-
-Install dependencies and start the local server:
-```bash
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload
 ```
-The FastAPI instance will initialize on `http://localhost:8000`.
+Runs at `http://127.0.0.1:8000`
 
-
-### 3. Frontend Environment Configuration
-In a separate terminal session, navigate to the frontend directory:
+### 3. Frontend
 ```bash
 cd medical-rag-frontend
 npm install
 npm run dev
 ```
-The React application will initialize on `http://localhost:5173`.
+Runs at `http://localhost:5173`
 
-## Operational Workflow
-1. **Authentication:** Register a clinical user account and authenticate via the web interface.
-2. **Patient Registration:** Generate a unique Patient ID via the dashboard.
-3. **Data Ingestion:** Upload clinical documents (PDF, TXT). The backend processes, chunks, embeds, and stores the document vectors into the patient's specific offline index.
-4. **Query Execution:** Utilize the chat interface to query the localized LLM. The system retrieves the most relevant vector chunks to synthesize an accurate response based exclusively on the provided documents.
+---
 
-## Deployment Constraints and Guidelines
-Due to the architectural requirement of processing data strictly offline to protect PHI, standard ephemeral cloud deployments (e.g., Vercel, Render free/standard tiers) are structurally incompatible. Local inference requires persistent storage and significant compute resources.
+## How to use
 
-**Recommended Infrastructures:**
-- **On-Premise Server:** Deploy within a localized, firewalled hospital/clinic network using a dedicated workstation equipped with a discrete GPU to minimize latency.
-- **Dedicated Cloud Instance (IaaS):** If remote access is strictly necessary, deploy a containerized environment onto a dedicated GPU instance (e.g., AWS EC2 G-series, Azure NV-series) within a secure Virtual Private Cloud (VPC).
+1. Open `http://localhost:5173`
+2. Register a doctor account (no hospital code needed)
+3. Log in
+4. Go to **Upload Reports** — add a patient name, age, gender, and upload their documents
+5. Go to **Library** — find the patient and open their chat
+6. Ask questions like:
+   - "What is the CRP level?"
+   - "What is the prothrombin time?"
+   - "Does the patient have diabetes?"
+
+The system answers from the uploaded documents only. If the information isn't there, it tells you.
+
+---
+
+## Supported file types
+
+- PDF (text-based)
+- PDF (scanned) — processed via OCR
+- JPEG / PNG images
+- Excel (.xlsx, .xls)
+- Text files (.txt, .csv)
+
+---
+
+## Notes
+
+- Mistral needs ~4.5GB free RAM. If it fails to load, close other apps and try again.
+- The embedding model loads on first query and stays cached — subsequent queries are faster.
+- All data is stored locally under `backend/storage/` and `backend/medical_rag.db`.
+- No cloud deployment — this is intentionally an on-premise system.
+
+---
 
 ## License
-Proprietary software. Restricted for internal clinical demonstration and authorized medical deployment.
+
+For internal clinical demonstration and authorized medical use only.
