@@ -60,6 +60,7 @@ uvicorn main:app --reload --port 8000
 ```
 The FastAPI instance will initialize on `http://localhost:8000`.
 
+
 ### 3. Frontend Environment Configuration
 In a separate terminal session, navigate to the frontend directory:
 ```bash
