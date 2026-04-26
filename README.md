@@ -1,6 +1,5 @@
 # MedIntel AI — Offline Medical RAG System
 
-<<<<<<< HEAD
 <div align="center">
   <video src="./medical-rag-frontend/src/assets/demo.mp4" width="800" controls>
     Your browser does not support the video tag.
@@ -8,9 +7,7 @@
 </div>
 ## Overview
 This repository contains an offline-first Retrieval-Augmented Generation (RAG) system designed specifically for the medical sector. The application provides medical professionals with a secure, local environment to upload patient documents, parse unstructured medical data, and query a local Large Language Model (LLM) for clinical insights and historical summarization. 
-=======
 ## The Problem
->>>>>>> 45f4ec01b096d93c0bd46d6a4335feee98355fcc
 
 Doctors deal with hundreds of patient records every day, but most of that information is buried inside long, unstructured documents — lab reports, discharge summaries, clinical notes. Finding something as simple as a lab value or a medication history means manually flipping through files or using basic keyword search that doesn't understand medical language.
 
