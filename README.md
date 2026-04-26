@@ -1,6 +1,6 @@
 # MedIntel AI — Offline Medical RAG System
 
-<video src="https://raw.githubusercontent.com/bhanu-3333/LLM-chatbot/main/medical-rag-frontend/src/assets/demo.mp4" controls="controls" width="100%">
+<video src="./medical-rag-frontend/src/assets/demo.mp4" controls="controls" width="100%">
 </video>
 
 ## Overview
