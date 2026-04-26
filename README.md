@@ -1,5 +1,23 @@
 # MedIntel AI — Offline Medical RAG System
 
+## The Problem
+
+Doctors deal with hundreds of patient records every day, but most of that information is buried inside long, unstructured documents — lab reports, discharge summaries, clinical notes. Finding something as simple as a lab value or a medication history means manually flipping through files or using basic keyword search that doesn't understand medical language.
+
+That search takes minutes. Minutes that matter in a clinical setting.
+
+On top of that, patient data can't be sent to cloud-based AI tools because of privacy regulations. So doctors are stuck — too much data, no intelligent way to access it quickly, and no safe way to use modern AI.
+
+## The Solution
+
+MedIntel AI is a fully offline AI assistant built for hospitals. Doctors upload patient documents once, and from that point they can just ask questions in plain English — "What is the CRP level?", "What medications is this patient on?", "Does this patient have a history of diabetes?" — and get answers pulled directly from the actual documents, with the source cited.
+
+No internet. No data leaving the hospital. No hallucinated answers.
+
+Each doctor has their own patient records. Each patient has their own isolated AI context. The system only answers from what's in the documents — if the information isn't there, it says so.
+
+---
+
 A local AI system that lets doctors upload patient reports and ask questions about them in plain English. Everything runs on your machine — no internet needed, no data leaves the hospital.
 
 ---
