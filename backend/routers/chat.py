@@ -249,6 +249,20 @@ def chat_stream(
                     print(f"[chat] Top scores: {[round(s,3) for _,s in scored]}")
                     print(f"[chat] Sources: {[os.path.basename(d.metadata.get('source','?')) for d in docs]}")
 
+                    # Keyword fallback — scan docstore for chunks containing key query terms
+                    # that may have been missed due to chunk boundary splits
+                    query_keywords = [w.upper() for w in query.split() if len(w) > 3]
+                    retrieved_ids = {id(d) for d in docs}
+                    all_stored = list(db_index.docstore._dict.values())
+                    for kw in query_keywords:
+                        for d in all_stored:
+                            if kw in d.page_content.upper() and id(d) not in retrieved_ids:
+                                docs.append(d)
+                                retrieved_ids.add(id(d))
+                                print(f"[chat] Keyword fallback: added chunk containing '{kw}'")
+                                break
+                    docs = docs[:TOP_K_CHUNKS + 2]
+
                 if not docs:
                     ans = "No relevant data found"
                     yield json.dumps({"answer": ans, "citations": []}) + "\n"
