@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Home.css';
 import '../styles/About.css';
@@ -8,6 +9,16 @@ const isLoggedIn = () => !!localStorage.getItem('token');
 
 export default function About() {
   const nav = useNavigate();
+  const [toast, setToast] = useState(false);
+
+  const guarded = (path) => {
+    if (isLoggedIn()) {
+      nav(path);
+    } else {
+      setToast(true);
+      setTimeout(() => setToast(false), 3000);
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -17,6 +28,13 @@ export default function About() {
 
   return (
     <div className="home-root">
+      {/* ── Login toast ── */}
+      {toast && (
+        <div className="home-toast">
+          🔒 Please <span onClick={() => nav('/login')}>log in</span> to access this feature.
+        </div>
+      )}
+
       <div className="page-wrapper">
 
         {/* ── Navbar ── */}
@@ -25,22 +43,10 @@ export default function About() {
             MedIntel AI
           </div>
           <div className="nav-links">
-            {isLoggedIn() ? (
-              <>
-                <a onClick={() => nav('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
-                <a onClick={() => nav('/upload')} className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
-                <a onClick={() => nav('/library')} className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
-                <a onClick={() => nav('/about')} className="nav-item" style={{ cursor: 'pointer' }}>About</a>
-              </>
-            ) : (
-              <>
-                <a href="#" className="nav-item">Product</a>
-                <a href="#" className="nav-item">Service</a>
-                <a href="#" className="nav-item">Features</a>
-                <a href="#" className="nav-item">Contact</a>
-                <a onClick={() => nav('/about')} className="nav-item" style={{ cursor: 'pointer' }}>About</a>
-              </>
-            )}
+            <a onClick={() => guarded('/dashboard')} className="nav-item" style={{ cursor: 'pointer' }}>Home</a>
+            <a onClick={() => guarded('/upload')}    className="nav-item" style={{ cursor: 'pointer' }}>Upload Reports</a>
+            <a onClick={() => guarded('/library')}   className="nav-item" style={{ cursor: 'pointer' }}>Library</a>
+            <a onClick={() => nav('/about')}         className="nav-item" style={{ cursor: 'pointer' }}>About</a>
           </div>
           {isLoggedIn() ? (
             <button className="login-btn-nav logout-btn" onClick={logout}>
@@ -70,8 +76,6 @@ export default function About() {
               reports, lab results, and clinical notes to find important information. This process takes
               time and can delay quick decision making, especially in critical situations.
             </p>
-
-
 
             <p className="about-body" style={{ marginTop: '44px' }}>
               Our system is designed to simplify this. A doctor can upload a patient's report whether
