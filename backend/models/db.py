@@ -20,7 +20,7 @@ class Doctor(Base):
     specialization = Column(String, nullable=False)
     email          = Column(String, unique=True, nullable=False)
     password_hash  = Column(String, nullable=False)
-    hospital_id    = None # Optional now
+    hospital_id    = Column(String, nullable=True) # Optional now
 
     patients = relationship("Patient",  back_populates="doctor")
 
