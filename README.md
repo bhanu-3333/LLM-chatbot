@@ -1,6 +1,7 @@
 # MedIntel AI — Offline Medical RAG System
 
-### 🎥 [Click here to download and watch the MedIntel AI Demo Video](./medical-rag-frontend/src/assets/demo.mp4)
+https://github.com/bhanu-3333/LLM-chatbot/raw/main/medical-rag-frontend/src/assets/demo.mp4
+
 ## Overview
 This repository contains an offline-first Retrieval-Augmented Generation (RAG) system designed specifically for the medical sector. The application provides medical professionals with a secure, local environment to upload patient documents, parse unstructured medical data, and query a local Large Language Model (LLM) for clinical insights and historical summarization. 
 ## The Problem
