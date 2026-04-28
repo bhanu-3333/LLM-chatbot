@@ -1,5 +1,7 @@
 # MedIntel AI — Offline Medical RAG System
-![MedIntel AI Demo](medical-rag-frontend/src/assets/demo.mp4)
+
+<video src="medical-rag-frontend/src/assets/demo.mp4" width="100%" controls></video>
+
 
 
 ## Overview
