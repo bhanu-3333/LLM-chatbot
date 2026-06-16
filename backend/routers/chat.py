@@ -249,9 +249,9 @@ def chat_stream(
                     print(f"[chat] Top scores: {[round(s,3) for _,s in scored]}")
                     print(f"[chat] Sources: {[os.path.basename(d.metadata.get('source','?')) for d in docs]}")
 
-                    # Keyword fallback — scan docstore for chunks containing key query terms
-                    # that may have been missed due to chunk boundary splits
-                    query_keywords = [w.upper() for w in query.split() if len(w) > 3]
+                    # Keyword fallback — scan ALL docstore chunks for ALL query keywords
+                    # This ensures values from different files are all included
+                    query_keywords = [w.upper() for w in query.split() if len(w) >= 2]
                     retrieved_ids = {id(d) for d in docs}
                     all_stored = list(db_index.docstore._dict.values())
                     for kw in query_keywords:
@@ -259,9 +259,9 @@ def chat_stream(
                             if kw in d.page_content.upper() and id(d) not in retrieved_ids:
                                 docs.append(d)
                                 retrieved_ids.add(id(d))
-                                print(f"[chat] Keyword fallback: added chunk containing '{kw}'")
-                                break
-                    docs = docs[:TOP_K_CHUNKS + 2]
+                                print(f"[chat] Keyword fallback: added chunk containing '{kw}' from {os.path.basename(d.metadata.get('source','?'))}")
+                                # Don't break — keep scanning for more chunks with this keyword from other files
+                    docs = docs[:TOP_K_CHUNKS + 4]  # allow more for multi-value queries
 
                 if not docs:
                     ans = "No relevant data found"
@@ -273,13 +273,22 @@ def chat_stream(
                     return
 
                 context = "\n".join([d.page_content for d in docs])
-                citations_list = _build_citations(docs)
+                print(f"[chat] Context sent to LLM (first 500 chars): {repr(context[:500])}")
+
+                # Build citations from docs that actually contain query keywords
+                # so we only cite the source(s) where the answer was found
+                stopwords = {"what", "is", "the", "of", "and", "or", "value", "result", "level"}
+                answer_keywords = [w.upper() for w in query.split() if len(w) >= 2 and w.lower() not in stopwords]
+                relevant_docs = [d for d in docs if any(kw in d.page_content.upper() for kw in answer_keywords)]
+                # Fall back to all docs if nothing matched
+                citation_docs = relevant_docs if relevant_docs else docs
+                citations_list = _build_citations(citation_docs)
 
                 # Send citations
                 yield json.dumps({"citations": citations_list}) + "\n"
 
                 # Stream and collect the answer
-                for line in stream_answer(context, query):
+                for line in stream_answer(context, query, docs=docs):
                     yield line
                     try:
                         data = json.loads(line)

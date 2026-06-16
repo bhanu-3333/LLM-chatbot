@@ -11,4 +11,4 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 LLM_MODEL = "mistral"
 
 # Retrieval — score-ranked across ALL documents in the patient's index
-TOP_K_CHUNKS = 8
+TOP_K_CHUNKS = 5
